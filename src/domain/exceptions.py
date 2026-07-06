@@ -28,3 +28,11 @@ class IngredientNotFoundError(DomainError):
     def __init__(self, ingredient_id: str) -> None:
         super().__init__(f"Ingredient with id '{ingredient_id}' was not found.")
         self.ingredient_id = ingredient_id
+
+
+class SubstitutionNotFoundError(DomainError):
+    """Raised when a substitution cannot be located by the repository."""
+
+    def __init__(self, substitution_id: str) -> None:
+        super().__init__(f"Substitution with id '{substitution_id}' was not found.")
+        self.substitution_id = substitution_id

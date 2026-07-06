@@ -7,8 +7,22 @@ domain or application.
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 
-from sqlalchemy import Date, Enum, Float, Index, Integer, String, text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    Enum,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    Numeric,
+    String,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,6 +50,13 @@ _shelf_life_model_type = Enum(
     "spoilage",
     "potency",
     name="shelf_life_model_type",
+)
+
+_substitution_context_type = Enum(
+    "baking",
+    "savory",
+    "general",
+    name="substitution_context",
 )
 
 
@@ -100,4 +121,59 @@ class IngredientModel(Base):
     __table_args__ = (
         # GIN index enables efficient `'alias' = ANY(aliases)` lookups (AC-4).
         Index("ix_ingredients_aliases_gin", "aliases", postgresql_using="gin"),
+    )
+
+
+class SubstitutionModel(Base):
+    """Persistence representation of an ingredient substitution (§8/§5.5 schema)."""
+
+    __tablename__ = "substitutions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+    # Directed: "use to_ingredient instead of from_ingredient".
+    from_ingredient_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    to_ingredient_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    # Free-text ratio guidance, e.g. "use ¾ the amount".
+    ratio_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    context: Mapped[str] = mapped_column(_substitution_context_type, nullable=False)
+
+    # Free-text description of the culinary impact of the swap.
+    impact_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # NUMERIC(4,3) stores exact decimals 0.000–1.000; supports reliable >= comparisons.
+    confidence: Mapped[Decimal] = mapped_column(
+        Numeric(precision=4, scale=3), nullable=False
+    )
+
+    __table_args__ = (
+        # Each ingredient pair may have at most one substitution per cooking context.
+        UniqueConstraint(
+            "from_ingredient_id",
+            "to_ingredient_id",
+            "context",
+            name="uq_substitutions_pair_context",
+        ),
+        CheckConstraint(
+            "from_ingredient_id != to_ingredient_id",
+            name="ck_substitutions_no_self_reference",
+        ),
+        CheckConstraint(
+            "confidence >= 0 AND confidence <= 1",
+            name="ck_substitutions_confidence_range",
+        ),
+        # B-tree index supports threshold queries: WHERE confidence >= :threshold
+        Index("ix_substitutions_confidence", "confidence"),
     )
