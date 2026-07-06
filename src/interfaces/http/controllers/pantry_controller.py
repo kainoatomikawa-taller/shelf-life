@@ -62,7 +62,7 @@ async def list_pantry_items(
     return [PantryItemResponse(**asdict(o)) for o in outputs]
 
 
-@router.post("/{item_id}/consume")
+@router.post("/{item_id}/consume", response_model=None)
 async def consume_pantry_item(
     item_id: str,
     body: ConsumePantryItemRequest,

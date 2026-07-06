@@ -11,6 +11,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from src.interfaces.http.controllers.catalog_controller import (
+    router as catalog_router,
+)
+from src.interfaces.http.controllers.inventory_controller import (
+    router as inventory_router,
+)
 from src.interfaces.http.controllers.pantry_controller import (
     router as pantry_router,
 )
@@ -45,6 +51,8 @@ def create_app() -> FastAPI:
 
     app.include_router(pantry_router)
     app.include_router(user_router)
+    app.include_router(catalog_router)
+    app.include_router(inventory_router)
     return app
 
 

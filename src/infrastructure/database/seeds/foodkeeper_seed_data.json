@@ -726,6 +726,19 @@
       "diet_tags": ["vegan", "vegetarian", "gluten_free", "dairy_free"]
     },
     {
+      "name": "Green Onions",
+      "aliases": ["scallion", "scallions", "spring onion", "spring onions"],
+      "category": "perishable_fridge",
+      "default_storage_location": "fridge",
+      "shelf_life_model": "spoilage",
+      "fridge_days": 7,
+      "counter_days": null,
+      "freezer_days": 90,
+      "pantry_days": null,
+      "allergen_tags": [],
+      "diet_tags": ["vegan", "vegetarian", "gluten_free", "dairy_free"]
+    },
+    {
       "name": "Garlic",
       "aliases": ["garlic head", "garlic bulb", "fresh garlic"],
       "category": "pantry",

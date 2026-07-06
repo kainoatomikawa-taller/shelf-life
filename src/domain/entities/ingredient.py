@@ -89,6 +89,26 @@ class Ingredient:
         q = query.lower().strip()
         return q == self._name.lower() or q in {a.lower() for a in self._aliases}
 
+    def search_rank(self, query: str) -> int | None:
+        """Rank this ingredient's relevance to a catalog search query, or
+        None if it doesn't match at all. Lower is more relevant: 0 is an
+        exact match on the name or an alias (e.g. "scallion" against
+        Green Onions' alias list), 1 is a name/alias prefix match, 2 is
+        any other substring match. Powers the add-item search box, where
+        alias hits must surface the canonical ingredient (§5.2 AC1).
+        """
+        q = query.lower().strip()
+        if not q:
+            return None
+        candidates = [self._name.lower(), *(a.lower() for a in self._aliases)]
+        if q in candidates:
+            return 0
+        if any(c.startswith(q) for c in candidates):
+            return 1
+        if any(q in c for c in candidates):
+            return 2
+        return None
+
     def add_alias(self, alias: str) -> None:
         """Register an additional alias, ignoring case-duplicate entries."""
         if not alias or not alias.strip():

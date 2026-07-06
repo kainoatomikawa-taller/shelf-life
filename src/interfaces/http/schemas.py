@@ -6,7 +6,7 @@ enforced in the domain layer, not here.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel, Field
 
@@ -60,6 +60,49 @@ class OnboardingRequest(BaseModel):
     equipment: list[str] = Field(default_factory=list)
     budget_sensitivity: str = "medium"
     adventurousness: float = Field(0.5, ge=0.0, le=1.0)
+
+
+class IngredientSummaryResponse(BaseModel):
+    id: str
+    name: str
+    aliases: list[str]
+    category: str
+    default_storage_location: str
+
+
+class AddInventoryItemRequest(BaseModel):
+    """Body for adding an inventory item from the add-item screen (§5.2).
+
+    Only ingredient_id is required — quantity_state and storage_location
+    fall back to smart defaults when omitted, and the dates are left for
+    the freshness engine to estimate around when skipped.
+    """
+
+    user_id: str = Field(..., min_length=1)
+    ingredient_id: str = Field(..., min_length=1)
+    quantity_state: str | None = None
+    storage_location: str | None = None
+    purchase_date: date | None = None
+    printed_package_date: date | None = None
+    is_frozen: bool = False
+    notes: str | None = None
+
+
+class InventoryItemResponse(BaseModel):
+    id: str
+    user_id: str
+    ingredient_id: str
+    ingredient_name: str
+    quantity_state: str
+    storage_location: str
+    purchase_date: date | None
+    printed_package_date: date | None
+    is_frozen: bool
+    computed_freshness_date: date
+    freshness_date_type: str
+    freshness_status: str
+    added_at: datetime
+    notes: str | None
 
 
 class UserProfileResponse(BaseModel):

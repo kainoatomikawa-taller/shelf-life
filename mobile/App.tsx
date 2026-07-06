@@ -5,13 +5,14 @@
 
 import React, {useState} from 'react';
 import {SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
 import {PantryScreen} from './src/ui/PantryScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
 
 const DEMO_USER_ID = 'demo-user';
 
-type Tab = 'pantry' | 'profile';
+type Tab = 'pantry' | 'add' | 'profile';
 
 function App(): React.JSX.Element {
   const [onboarded, setOnboarded] = useState(false);
@@ -22,11 +23,9 @@ function App(): React.JSX.Element {
       <StatusBar barStyle="dark-content" />
       {onboarded ? (
         <>
-          {activeTab === 'pantry' ? (
-            <PantryScreen />
-          ) : (
-            <ProfileScreen userId={DEMO_USER_ID} />
-          )}
+          {activeTab === 'pantry' && <PantryScreen />}
+          {activeTab === 'add' && <AddItemScreen userId={DEMO_USER_ID} />}
+          {activeTab === 'profile' && <ProfileScreen userId={DEMO_USER_ID} />}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={styles.tabButton}
@@ -34,6 +33,14 @@ function App(): React.JSX.Element {
               <Text
                 style={[styles.tabLabel, activeTab === 'pantry' && styles.tabLabelActive]}>
                 Pantry
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => setActiveTab('add')}>
+              <Text
+                style={[styles.tabLabel, activeTab === 'add' && styles.tabLabelActive]}>
+                Add Item
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

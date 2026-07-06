@@ -34,6 +34,18 @@ class IngredientRepository(ABC):
         """
 
     @abstractmethod
+    async def search(self, query: str, limit: int = 20) -> list[Ingredient]:
+        """Return catalog ingredients matching a type-ahead search query.
+
+        Unlike find_by_name_or_alias's exact-token lookup, this backs the
+        add-item catalog search box (§5.2 AC1): it matches substrings of
+        the canonical name or any alias, case-insensitively, so a partial
+        or aliased query like "scallion" surfaces "Green Onions". Results
+        are ordered by relevance via Ingredient.search_rank, most relevant
+        first, capped at `limit`.
+        """
+
+    @abstractmethod
     async def list_by_category(self, category: IngredientCategory) -> list[Ingredient]:
         """Return all ingredients in a given category."""
 
