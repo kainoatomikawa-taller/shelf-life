@@ -69,6 +69,7 @@ async def _build(inventory_items: list[InventoryItem]) -> tuple[
     InMemoryRatingRepository,
     InMemoryUserRepository,
     InMemoryInventoryItemRepository,
+    InMemoryRecipeRepository,
 ]:
     rating_repo = InMemoryRatingRepository()
     recipe_repo = InMemoryRecipeRepository([_recipe()])
@@ -91,12 +92,12 @@ async def _build(inventory_items: list[InventoryItem]) -> tuple[
         recipe_repository=recipe_repo,
         inventory_item_repository=inventory_repo,
     )
-    return use_case, rating_repo, user_repo, inventory_repo
+    return use_case, rating_repo, user_repo, inventory_repo, recipe_repo
 
 
 @pytest.mark.asyncio
 async def test_captures_stars_and_quick_tags() -> None:
-    use_case, repo, _, _ = await _build([])
+    use_case, repo, _, _, _ = await _build([])
     output = await use_case.execute(
         SubmitRatingInput(
             user_id=USER_ID,
@@ -114,7 +115,7 @@ async def test_captures_stars_and_quick_tags() -> None:
 
 @pytest.mark.asyncio
 async def test_quick_tags_are_optional() -> None:
-    use_case, _, _, _ = await _build([])
+    use_case, _, _, _, _ = await _build([])
     output = await use_case.execute(
         SubmitRatingInput(user_id=USER_ID, recipe_id=RECIPE_ID, stars=4)
     )
@@ -123,7 +124,7 @@ async def test_quick_tags_are_optional() -> None:
 
 @pytest.mark.asyncio
 async def test_rating_updates_the_users_taste_vector() -> None:
-    use_case, _, user_repo, _ = await _build([])
+    use_case, _, user_repo, _, _ = await _build([])
     before = (await user_repo.get_by_id(USER_ID)).taste_vector
     await use_case.execute(
         SubmitRatingInput(user_id=USER_ID, recipe_id=RECIPE_ID, stars=5)
@@ -133,8 +134,39 @@ async def test_rating_updates_the_users_taste_vector() -> None:
 
 
 @pytest.mark.asyncio
+async def test_rating_updates_the_recipes_popularity_score() -> None:
+    use_case, _, _, _, recipe_repo = await _build([])
+    before = (await recipe_repo.get_by_id(RECIPE_ID)).popularity_score
+
+    await use_case.execute(
+        SubmitRatingInput(user_id=USER_ID, recipe_id=RECIPE_ID, stars=5)
+    )
+
+    after = (await recipe_repo.get_by_id(RECIPE_ID)).popularity_score
+    assert after > before
+
+
+@pytest.mark.asyncio
+async def test_known_quick_tag_adjusts_the_matching_taste_vector_dimension() -> None:
+    use_case, _, user_repo, _, _ = await _build([])
+    before = (await user_repo.get_by_id(USER_ID)).taste_vector.as_dict()["spiciness"]
+
+    await use_case.execute(
+        SubmitRatingInput(
+            user_id=USER_ID,
+            recipe_id=RECIPE_ID,
+            stars=5,
+            quick_tags=["too spicy"],
+        )
+    )
+
+    after = (await user_repo.get_by_id(USER_ID)).taste_vector.as_dict()["spiciness"]
+    assert after < before
+
+
+@pytest.mark.asyncio
 async def test_offers_decrementable_ingredients_without_applying_them() -> None:
-    use_case, _, _, inventory_repo = await _build(
+    use_case, _, _, inventory_repo, _ = await _build(
         [
             _inventory_item(FLOUR, QuantityState.IN),
             _inventory_item(EGGS, QuantityState.OUT),
@@ -152,7 +184,7 @@ async def test_offers_decrementable_ingredients_without_applying_them() -> None:
 
 @pytest.mark.asyncio
 async def test_unknown_user_raises_not_found() -> None:
-    use_case, _, _, _ = await _build([])
+    use_case, _, _, _, _ = await _build([])
     with pytest.raises(UserNotFoundError):
         await use_case.execute(
             SubmitRatingInput(user_id="ghost", recipe_id=RECIPE_ID, stars=5)
@@ -161,7 +193,7 @@ async def test_unknown_user_raises_not_found() -> None:
 
 @pytest.mark.asyncio
 async def test_unknown_recipe_raises_not_found() -> None:
-    use_case, _, _, _ = await _build([])
+    use_case, _, _, _, _ = await _build([])
     with pytest.raises(RecipeNotFoundError):
         await use_case.execute(
             SubmitRatingInput(user_id=USER_ID, recipe_id="ghost-recipe", stars=5)

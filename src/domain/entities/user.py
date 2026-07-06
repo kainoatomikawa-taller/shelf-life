@@ -79,16 +79,22 @@ class User:
         return self._hard_constraints.conflicts_with(allergen_tags)
 
     def record_rating(
-        self, recipe_flavor_profile: FlavorProfile, rating: float
+        self,
+        recipe_flavor_profile: FlavorProfile,
+        rating: float,
+        quick_tags: list[str] | None = None,
     ) -> None:
         """Nudge the derived taste vector toward or away from a rated recipe.
 
         Ratings above 3 pull the vector toward the recipe's flavor profile;
-        ratings below 3 push it away; 3 is neutral.
+        ratings below 3 push it away; 3 is neutral. Quick tags with a known
+        flavor-dimension meaning (e.g. "too spicy") additionally correct
+        that one dimension, regardless of the star rating.
         """
-        self._taste_vector = self._taste_vector.updated_with_rating(
-            recipe_flavor_profile, rating
-        )
+        updated = self._taste_vector.updated_with_rating(recipe_flavor_profile, rating)
+        if quick_tags:
+            updated = updated.updated_with_quick_tags(quick_tags)
+        self._taste_vector = updated
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, User):

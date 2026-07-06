@@ -176,6 +176,28 @@ def test_recipe_ingredient_is_essential_reflects_role() -> None:
     assert _recipe_ingredient(role=IngredientRole.OPTIONAL).is_essential is False
 
 
+def test_record_rating_increases_popularity_score() -> None:
+    recipe = _recipe(popularity_score=0.5)
+    recipe.record_rating(stars=5.0)
+    assert recipe.popularity_score > 0.5
+
+
+def test_record_rating_increases_popularity_more_for_higher_stars() -> None:
+    low_rated = _recipe(popularity_score=0.5)
+    low_rated.record_rating(stars=1.0)
+
+    high_rated = _recipe(popularity_score=0.5)
+    high_rated.record_rating(stars=5.0)
+
+    assert high_rated.popularity_score > low_rated.popularity_score
+
+
+def test_record_rating_rejects_out_of_range_stars() -> None:
+    recipe = _recipe()
+    with pytest.raises(ValidationError):
+        recipe.record_rating(stars=6.0)
+
+
 def test_recipe_equality_is_by_id() -> None:
     assert _recipe(id="recipe-1") == _recipe(id="recipe-1", name="Different Name")
     assert _recipe(id="recipe-1") != _recipe(id="recipe-2")

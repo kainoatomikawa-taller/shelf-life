@@ -34,6 +34,10 @@ from src.domain.value_objects.flavor_profile import FlavorProfile
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
 
+MIN_STARS = 1.0
+MAX_STARS = 5.0
+DEFAULT_POPULARITY_INCREMENT = 0.05
+
 
 def _normalize_tags(tags: list[str]) -> list[str]:
     return [t.strip().lower() for t in tags if t and t.strip()]
@@ -150,6 +154,20 @@ class Recipe:
 
     def optional_ingredients(self) -> list[RecipeIngredient]:
         return [i for i in self._ingredients if not i.is_essential]
+
+    def record_rating(self, stars: float) -> None:
+        """Nudge popularity_score up for a new cook, weighted by stars.
+
+        Every rating is a signal someone actually made the recipe, so even
+        a low-star cook counts for something; a highly-rated one counts for
+        more. Popularity only ever grows here — it is a global, cumulative
+        engagement signal, not a per-user preference like TasteVector.
+        """
+        if not (MIN_STARS <= stars <= MAX_STARS):
+            raise ValidationError(
+                f"stars must be between {MIN_STARS} and {MAX_STARS}, got {stars}."
+            )
+        self._popularity_score += DEFAULT_POPULARITY_INCREMENT * (stars / MAX_STARS)
 
     def derive_allergen_tags(
         self, ingredients_by_id: dict[str, Ingredient]

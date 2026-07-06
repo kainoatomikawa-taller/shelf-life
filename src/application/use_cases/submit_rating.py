@@ -1,11 +1,12 @@
-"""SubmitRating use case (§5.6 AC1/AC2).
+"""SubmitRating use case (§5.6 AC1/AC2, §10 Step 5).
 
 Backs the post-cook rating prompt: records a star/thumb rating plus optional
-quick tags, folds it into the user's derived taste vector (the existing
-learning loop on User.record_rating), and surfaces which of the recipe's
-ingredients are eligible for the optional pantry stock decrement — without
-ever applying it. Applying the decrement is a separate, explicit action
-(DecrementRecipeIngredientsUseCase) so the offer is never forced.
+quick tags, folds it into the user's derived taste vector and the recipe's
+global popularity_score (§10 Step 5's taste-profile learning loop), and
+surfaces which of the recipe's ingredients are eligible for the optional
+pantry stock decrement — without ever applying it. Applying the decrement is
+a separate, explicit action (DecrementRecipeIngredientsUseCase) so the offer
+is never forced.
 """
 
 from __future__ import annotations
@@ -61,8 +62,11 @@ class SubmitRatingUseCase:
         )
         await self._rating_repository.add(rating)
 
-        user.record_rating(recipe.flavor_profile, float(dto.stars))
+        user.record_rating(recipe.flavor_profile, float(dto.stars), dto.quick_tags)
         await self._user_repository.update(user)
+
+        recipe.record_rating(float(dto.stars))
+        await self._recipe_repository.update(recipe)
 
         inventory_items = await self._inventory_item_repository.list_by_user(
             dto.user_id

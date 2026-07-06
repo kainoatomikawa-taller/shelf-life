@@ -76,6 +76,43 @@ def test_rating_out_of_range_is_rejected() -> None:
         user.record_rating(FlavorProfile(), rating=6.0)
 
 
+def test_known_quick_tag_lowers_matching_dimension_even_on_a_high_rating() -> None:
+    user = _user(flavor_profile=FlavorProfile(spiciness=0.5))
+    before = user.taste_vector.as_dict()["spiciness"]
+
+    user.record_rating(
+        FlavorProfile(spiciness=1.0), rating=5.0, quick_tags=["too spicy"]
+    )
+
+    after = user.taste_vector.as_dict()["spiciness"]
+    # The 5-star rating alone would pull spiciness up toward the recipe's
+    # 1.0; the "too spicy" tag should override that and pull it down instead.
+    assert after < before
+
+
+def test_known_quick_tag_raises_matching_dimension() -> None:
+    user = _user(flavor_profile=FlavorProfile(saltiness=0.5))
+    before = user.taste_vector.as_dict()["saltiness"]
+
+    user.record_rating(
+        FlavorProfile(saltiness=0.5), rating=3.0, quick_tags=["not salty enough"]
+    )
+
+    after = user.taste_vector.as_dict()["saltiness"]
+    assert after > before
+
+
+def test_unrecognized_quick_tags_do_not_move_the_taste_vector() -> None:
+    user = _user(flavor_profile=FlavorProfile(spiciness=0.5))
+    before = user.taste_vector.as_dict()
+
+    user.record_rating(
+        FlavorProfile(spiciness=0.5), rating=3.0, quick_tags=["easy", "kid-approved"]
+    )
+
+    assert user.taste_vector.as_dict() == before
+
+
 def test_has_allergy_conflict_matches_case_insensitively() -> None:
     user = _user()
     assert user.has_allergy_conflict(["Peanuts", "soy"]) is True
