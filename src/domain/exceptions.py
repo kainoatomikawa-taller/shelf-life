@@ -20,3 +20,11 @@ class PantryItemNotFoundError(DomainError):
     def __init__(self, item_id: str) -> None:
         super().__init__(f"Pantry item with id '{item_id}' was not found.")
         self.item_id = item_id
+
+
+class IngredientNotFoundError(DomainError):
+    """Raised when an ingredient cannot be located by the repository."""
+
+    def __init__(self, ingredient_id: str) -> None:
+        super().__init__(f"Ingredient with id '{ingredient_id}' was not found.")
+        self.ingredient_id = ingredient_id
