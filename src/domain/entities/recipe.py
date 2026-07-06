@@ -19,12 +19,18 @@ leaving it purely descriptive:
   only. A diet label (e.g. "vegan") should only be disqualified by an
   ingredient the cook can't leave out; an optional non-vegan garnish
   shouldn't strip the vegan tag from a recipe that's vegan without it.
+
+flavor_profile is the numeric counterpart to flavor_tags: the same six
+FlavorProfile dimensions used for a user's declared preferences and derived
+TasteVector (§4.6), so a recipe's taste match can be scored by similarity
+rather than tag overlap (§10 Step 3). Defaults to neutral when unset.
 """
 
 from __future__ import annotations
 
 from src.domain.entities.ingredient import Ingredient
 from src.domain.exceptions import IngredientNotFoundError, ValidationError
+from src.domain.value_objects.flavor_profile import FlavorProfile
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
 
@@ -49,6 +55,7 @@ class Recipe:
         technique_tags: list[str] | None = None,
         equipment_needed: list[str] | None = None,
         popularity_score: float = 0.0,
+        flavor_profile: FlavorProfile | None = None,
     ) -> None:
         if not id:
             raise ValidationError("Recipe id is required.")
@@ -84,6 +91,7 @@ class Recipe:
         self._technique_tags = _normalize_tags(technique_tags or [])
         self._equipment_needed = _normalize_tags(equipment_needed or [])
         self._popularity_score = popularity_score
+        self._flavor_profile = flavor_profile or FlavorProfile()
 
     # --- Identity & read-only accessors ----------------------------------------
 
@@ -130,6 +138,10 @@ class Recipe:
     @property
     def popularity_score(self) -> float:
         return self._popularity_score
+
+    @property
+    def flavor_profile(self) -> FlavorProfile:
+        return self._flavor_profile
 
     # --- Behaviour -------------------------------------------------------------
 

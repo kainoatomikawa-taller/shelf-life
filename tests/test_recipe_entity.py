@@ -5,6 +5,7 @@ import pytest
 from src.domain.entities.ingredient import Ingredient
 from src.domain.entities.recipe import Recipe
 from src.domain.exceptions import IngredientNotFoundError, ValidationError
+from src.domain.value_objects.flavor_profile import FlavorProfile
 from src.domain.value_objects.ingredient_category import IngredientCategory
 from src.domain.value_objects.ingredient_role import IngredientRole
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
@@ -50,6 +51,15 @@ def _recipe(**overrides: object) -> Recipe:
     )
     defaults.update(overrides)
     return Recipe(**defaults)  # type: ignore[arg-type]
+
+
+def test_flavor_profile_defaults_to_neutral() -> None:
+    assert _recipe().flavor_profile == FlavorProfile()
+
+
+def test_flavor_profile_can_be_set_explicitly() -> None:
+    profile = FlavorProfile(sweetness=0.9, spiciness=0.1)
+    assert _recipe(flavor_profile=profile).flavor_profile == profile
 
 
 def test_tags_are_normalized_to_lowercase() -> None:

@@ -423,6 +423,28 @@ class RecipeModel(Base):
         Float, nullable=False, server_default="0"
     )
 
+    # flavor_profile_* — flattened FlavorProfile dimensions, same convention
+    # as UserModel's, so a recipe's taste match can be scored by similarity
+    # against a user's taste vector (§10 Step 3) rather than tag overlap.
+    flavor_profile_sweetness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_saltiness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_sourness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_bitterness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_spiciness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_umami: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+
     __table_args__ = (
         CheckConstraint(
             "time_minutes > 0", name="ck_recipes_time_minutes_positive"
