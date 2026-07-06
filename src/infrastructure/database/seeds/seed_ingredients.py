@@ -16,7 +16,6 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
-import uuid
 from pathlib import Path
 
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -24,21 +23,14 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from src.infrastructure.config import settings
 from src.infrastructure.database.models import IngredientModel
-
-# Fixed namespace ensures ingredient IDs are stable across re-runs.
-_SEED_NAMESPACE = uuid.UUID("a9f3c2e1-4b8d-5f67-89ab-cdef01234567")
+from src.infrastructure.database.seeds._seed_utils import ingredient_id
 
 _DATA_FILE = Path(__file__).parent / "foodkeeper_seed_data.json"
 
 
-def _ingredient_id(name: str) -> str:
-    """Deterministic UUID-5 derived from the canonical ingredient name."""
-    return str(uuid.uuid5(_SEED_NAMESPACE, f"foodkeeper:{name.lower()}"))
-
-
 def _build_row(item: dict) -> dict:  # type: ignore[type-arg]
     return {
-        "id": _ingredient_id(item["name"]),
+        "id": ingredient_id(item["name"]),
         "name": item["name"],
         "aliases": item.get("aliases") or [],
         "category": item["category"],

@@ -1,0 +1,334 @@
+{
+  "meta": {
+    "notes": [
+      "from_ingredient: the ingredient the recipe calls for (the one being substituted).",
+      "to_ingredient: the ingredient used in its place.",
+      "Directionality is explicit — A→B and B→A are separate entries and may differ in ratio and impact.",
+      "Baking-invalid swaps (e.g. oil for butter) are scoped to context='savory' to prevent incorrect baking suggestions.",
+      "confidence: 0.000–1.000; reflects how closely the substitute reproduces the original's culinary role.",
+      "All ingredient names must match a row in the ingredients catalog."
+    ]
+  },
+  "substitutions": [
+    {
+      "from_ingredient": "Buttermilk",
+      "to_ingredient": "Whole Milk",
+      "ratio_note": "1 cup whole milk + 1 tbsp lemon juice or white vinegar; stir and let stand 5 min until slightly curdled",
+      "context": "baking",
+      "impact_note": "Closely mimics buttermilk's acidity and tenderizing effect in pancakes, cakes, and quick breads.",
+      "confidence": 0.940
+    },
+    {
+      "from_ingredient": "Sour Cream",
+      "to_ingredient": "Yogurt, Plain",
+      "ratio_note": "1:1; Greek yogurt is the closest match",
+      "context": "general",
+      "impact_note": "Nearly identical fat content and acidity. Greek yogurt is a near drop-in; regular yogurt is slightly thinner.",
+      "confidence": 0.920
+    },
+    {
+      "from_ingredient": "Yogurt, Plain",
+      "to_ingredient": "Sour Cream",
+      "ratio_note": "1:1",
+      "context": "general",
+      "impact_note": "Sour cream is richer and thicker; expect a creamier, slightly less tangy result.",
+      "confidence": 0.880
+    },
+    {
+      "from_ingredient": "Heavy Cream",
+      "to_ingredient": "Whole Milk",
+      "ratio_note": "1:1 by volume; stir in 1 tbsp flour or cornstarch per cup to compensate for reduced body",
+      "context": "savory",
+      "impact_note": "Significantly lower fat content; sauce will be thinner and less rich. Not suitable for whipping.",
+      "confidence": 0.700
+    },
+    {
+      "from_ingredient": "Butter",
+      "to_ingredient": "Olive Oil",
+      "ratio_note": "Use ¾ cup olive oil per 1 cup butter",
+      "context": "savory",
+      "impact_note": "Lacks milk solids for browning; adds a distinct olive flavor. Unsuitable for baking where butter's emulsifying role matters.",
+      "confidence": 0.800
+    },
+    {
+      "from_ingredient": "Butter",
+      "to_ingredient": "Canola Oil",
+      "ratio_note": "Use ¾ cup canola oil per 1 cup butter",
+      "context": "savory",
+      "impact_note": "Neutral flavor avoids olive character; still lacks milk solids for browning and pastry structure.",
+      "confidence": 0.750
+    },
+    {
+      "from_ingredient": "Cream Cheese",
+      "to_ingredient": "Sour Cream",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Tangier and noticeably thinner. Good in dips and sauces; not reliable in cheesecake or other baked applications.",
+      "confidence": 0.680
+    },
+    {
+      "from_ingredient": "Cream Cheese",
+      "to_ingredient": "Yogurt, Plain",
+      "ratio_note": "1:1 with full-fat Greek yogurt",
+      "context": "savory",
+      "impact_note": "Much thinner and more tart; works in dips and dressings but will water down baked applications.",
+      "confidence": 0.620
+    },
+    {
+      "from_ingredient": "Sour Cream",
+      "to_ingredient": "Cream Cheese",
+      "ratio_note": "1:1; blend or whisk first for a smooth texture",
+      "context": "savory",
+      "impact_note": "Richer and thicker than sour cream; loses the bright tang but adds body to sauces and dips.",
+      "confidence": 0.650
+    },
+    {
+      "from_ingredient": "Olive Oil",
+      "to_ingredient": "Canola Oil",
+      "ratio_note": "1:1",
+      "context": "general",
+      "impact_note": "Neutral flavor; loses olive character entirely. Suitable for high-heat cooking where olive flavor would burn off anyway.",
+      "confidence": 0.870
+    },
+    {
+      "from_ingredient": "Canola Oil",
+      "to_ingredient": "Olive Oil",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Adds a mild olive flavor that can overpower delicate baked goods; appropriate in savory applications only.",
+      "confidence": 0.820
+    },
+    {
+      "from_ingredient": "White Sugar",
+      "to_ingredient": "Honey",
+      "ratio_note": "Use ¾ cup honey per 1 cup sugar; reduce other liquids by 3 tbsp and add ¼ tsp baking soda per cup of honey used",
+      "context": "baking",
+      "impact_note": "Honey adds floral notes and keeps baked goods moister; baking soda neutralizes honey's natural acidity.",
+      "confidence": 0.780
+    },
+    {
+      "from_ingredient": "Honey",
+      "to_ingredient": "White Sugar",
+      "ratio_note": "1 cup sugar + ¼ cup liquid per ¾ cup honey removed",
+      "context": "general",
+      "impact_note": "Loses floral complexity and moisture-retaining properties; the result will be slightly drier.",
+      "confidence": 0.760
+    },
+    {
+      "from_ingredient": "White Sugar",
+      "to_ingredient": "Brown Sugar",
+      "ratio_note": "1:1",
+      "context": "baking",
+      "impact_note": "Adds subtle molasses flavor and slightly more moisture; works especially well in cookies and muffins.",
+      "confidence": 0.900
+    },
+    {
+      "from_ingredient": "Brown Sugar",
+      "to_ingredient": "White Sugar",
+      "ratio_note": "1:1; optionally stir 1 tsp molasses into each cup of white sugar to approximate depth",
+      "context": "baking",
+      "impact_note": "Loses molasses richness; the result will be slightly less moist and less complex.",
+      "confidence": 0.850
+    },
+    {
+      "from_ingredient": "Baking Powder",
+      "to_ingredient": "Baking Soda",
+      "ratio_note": "Use ¼ tsp baking soda per 1 tsp baking powder; the recipe must contain an acidic ingredient (buttermilk, yogurt, citrus, or cocoa)",
+      "context": "baking",
+      "impact_note": "Works only if the recipe has enough acid to activate the soda; a soapy taste results if the baking soda is not fully neutralized.",
+      "confidence": 0.840
+    },
+    {
+      "from_ingredient": "Baking Soda",
+      "to_ingredient": "Baking Powder",
+      "ratio_note": "Use 3 tsp baking powder per 1 tsp baking soda",
+      "context": "baking",
+      "impact_note": "Provides leavening without requiring acid in the recipe; the larger volume can slightly dilute other flavors.",
+      "confidence": 0.790
+    },
+    {
+      "from_ingredient": "Lemons",
+      "to_ingredient": "Limes",
+      "ratio_note": "1:1 by juice volume",
+      "context": "general",
+      "impact_note": "Limes have a slightly more tropical, floral note and are marginally less tart; nearly interchangeable in most recipes.",
+      "confidence": 0.900
+    },
+    {
+      "from_ingredient": "Limes",
+      "to_ingredient": "Lemons",
+      "ratio_note": "1:1 by juice volume",
+      "context": "general",
+      "impact_note": "Lemons are slightly more tart with a cleaner citrus character; the flavor shift is subtle in cooked dishes.",
+      "confidence": 0.880
+    },
+    {
+      "from_ingredient": "Apple Cider Vinegar",
+      "to_ingredient": "Lemons",
+      "ratio_note": "Use equal volume of fresh lemon juice",
+      "context": "general",
+      "impact_note": "Brighter, more citrus-forward acidity; loses the mild apple-fruit note and slight funkiness of ACV.",
+      "confidence": 0.830
+    },
+    {
+      "from_ingredient": "Lemons",
+      "to_ingredient": "Apple Cider Vinegar",
+      "ratio_note": "Use equal volume of ACV",
+      "context": "general",
+      "impact_note": "Loses citrus aromatics; adds mellow, slightly fruity acidity. Works in marinades, dressings, and acidulated water.",
+      "confidence": 0.750
+    },
+    {
+      "from_ingredient": "Cheddar Cheese",
+      "to_ingredient": "Mozzarella",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Loses sharp nutty cheddar flavor; gains a better melt and stretch. Add a pinch of dry mustard powder to approximate sharpness.",
+      "confidence": 0.650
+    },
+    {
+      "from_ingredient": "Mozzarella",
+      "to_ingredient": "Cheddar Cheese",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Sharper flavor and firmer texture; loses the characteristic stretch and mild milky taste of mozzarella.",
+      "confidence": 0.650
+    },
+    {
+      "from_ingredient": "Dried Oregano",
+      "to_ingredient": "Dried Basil",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Sweeter and less earthy; works well in Italian-style sauces and Mediterranean dishes.",
+      "confidence": 0.720
+    },
+    {
+      "from_ingredient": "Dried Basil",
+      "to_ingredient": "Dried Oregano",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Earthier and more robust; reduce by ¼ in delicate sauces to avoid overpowering.",
+      "confidence": 0.700
+    },
+    {
+      "from_ingredient": "Dried Oregano",
+      "to_ingredient": "Dried Thyme",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "More floral and woody; excellent in soups, stews, and braises.",
+      "confidence": 0.760
+    },
+    {
+      "from_ingredient": "Dried Thyme",
+      "to_ingredient": "Dried Rosemary",
+      "ratio_note": "Use ½ tsp rosemary per 1 tsp thyme; crush or chop finely first",
+      "context": "savory",
+      "impact_note": "Much more assertive piney flavor; best reserved for robust dishes like roasted meats and root vegetables.",
+      "confidence": 0.620
+    },
+    {
+      "from_ingredient": "Dried Rosemary",
+      "to_ingredient": "Dried Thyme",
+      "ratio_note": "Use 2 tsp thyme per 1 tsp rosemary; thyme is considerably milder",
+      "context": "savory",
+      "impact_note": "Softer, more versatile flavor; loses the distinctive piney intensity of rosemary.",
+      "confidence": 0.700
+    },
+    {
+      "from_ingredient": "Cayenne Pepper",
+      "to_ingredient": "Chili Powder",
+      "ratio_note": "Use 3–4 tsp chili powder per 1 tsp cayenne",
+      "context": "savory",
+      "impact_note": "Significantly less heat per teaspoon; adds complexity from cumin, garlic, and other spices in the blend.",
+      "confidence": 0.700
+    },
+    {
+      "from_ingredient": "Chili Powder",
+      "to_ingredient": "Cayenne Pepper",
+      "ratio_note": "Use ¼ tsp cayenne per 1 tsp chili powder; cayenne is substantially hotter",
+      "context": "savory",
+      "impact_note": "Loses earthy, cumin-forward complexity; adds pure capsaicin heat without the broader spice blend character.",
+      "confidence": 0.670
+    },
+    {
+      "from_ingredient": "Paprika",
+      "to_ingredient": "Chili Powder",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Adds notable heat and spice complexity beyond paprika's mild sweetness; use only when some heat increase is acceptable.",
+      "confidence": 0.620
+    },
+    {
+      "from_ingredient": "Chili Powder",
+      "to_ingredient": "Paprika",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Loses all heat; paprika contributes mild sweetness and color but not the depth of a chili spice blend.",
+      "confidence": 0.600
+    },
+    {
+      "from_ingredient": "Garlic Powder",
+      "to_ingredient": "Onion Powder",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Loses garlic pungency and gains onion sweetness; acceptable only when neither onion nor garlic is critical to the dish.",
+      "confidence": 0.550
+    },
+    {
+      "from_ingredient": "Ground Ginger",
+      "to_ingredient": "Cinnamon, Ground",
+      "ratio_note": "Use ½ tsp cinnamon per 1 tsp ginger",
+      "context": "baking",
+      "impact_note": "Cinnamon is sweeter and lacks ginger's peppery heat; works in autumnal spice cakes and cookies but not in ginger-forward desserts.",
+      "confidence": 0.580
+    },
+    {
+      "from_ingredient": "Turmeric, Ground",
+      "to_ingredient": "Ground Ginger",
+      "ratio_note": "1:1",
+      "context": "savory",
+      "impact_note": "Loses earthy bitterness and vivid golden color; ginger adds warmth and a slight zing. Best limited to curries and Asian-inspired dishes.",
+      "confidence": 0.560
+    },
+    {
+      "from_ingredient": "Ground Nutmeg",
+      "to_ingredient": "Cinnamon, Ground",
+      "ratio_note": "Use 2 tsp cinnamon per 1 tsp nutmeg",
+      "context": "baking",
+      "impact_note": "Sweeter and less pungent; works well in apple-based and autumnal desserts.",
+      "confidence": 0.640
+    },
+    {
+      "from_ingredient": "Cinnamon, Ground",
+      "to_ingredient": "Ground Nutmeg",
+      "ratio_note": "Use ¼–½ tsp nutmeg per 1 tsp cinnamon; nutmeg is significantly more potent",
+      "context": "baking",
+      "impact_note": "Nutmeg is more complex and pungent; use sparingly. Excellent in custards, cream pies, and spice cakes.",
+      "confidence": 0.610
+    },
+    {
+      "from_ingredient": "Soy Sauce",
+      "to_ingredient": "Salt",
+      "ratio_note": "Use ¼ tsp salt per 1 tbsp soy sauce removed",
+      "context": "savory",
+      "impact_note": "Provides only saltiness; loses all umami depth, fermented complexity, and color that soy sauce contributes.",
+      "confidence": 0.530
+    },
+    {
+      "from_ingredient": "Salt",
+      "to_ingredient": "Soy Sauce",
+      "ratio_note": "Use 1 tbsp soy sauce per ¼ tsp salt",
+      "context": "savory",
+      "impact_note": "Adds umami depth and darkens the dish; can shift the flavor profile significantly toward Asian or savory-forward.",
+      "confidence": 0.580
+    },
+    {
+      "from_ingredient": "Black Pepper, Ground",
+      "to_ingredient": "Black Peppercorns",
+      "ratio_note": "Crack 1 tsp whole peppercorns to yield approximately 1 tsp ground; use a mortar, spice grinder, or pepper mill",
+      "context": "general",
+      "impact_note": "Freshly cracked peppercorns are noticeably more aromatic and vibrant than pre-ground; this is an improvement in quality.",
+      "confidence": 0.950
+    }
+  ]
+}

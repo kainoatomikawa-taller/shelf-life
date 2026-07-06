@@ -35,3 +35,4 @@ db-revision:
 
 db-seed:
 	python -m src.infrastructure.database.seeds.seed_ingredients
+	python -m src.infrastructure.database.seeds.seed_substitutions

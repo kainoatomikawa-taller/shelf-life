@@ -1322,6 +1322,45 @@
       "pantry_days": 1095,
       "allergen_tags": [],
       "diet_tags": ["vegan", "vegetarian", "gluten_free", "dairy_free"]
+    },
+    {
+      "name": "Buttermilk",
+      "aliases": ["cultured buttermilk", "low-fat buttermilk"],
+      "category": "perishable_fridge",
+      "default_storage_location": "fridge",
+      "shelf_life_model": "spoilage",
+      "fridge_days": 14,
+      "counter_days": null,
+      "freezer_days": 90,
+      "pantry_days": null,
+      "allergen_tags": ["dairy", "milk"],
+      "diet_tags": ["vegetarian", "gluten_free"]
+    },
+    {
+      "name": "Canola Oil",
+      "aliases": ["rapeseed oil", "vegetable oil"],
+      "category": "pantry",
+      "default_storage_location": "pantry",
+      "shelf_life_model": "spoilage",
+      "fridge_days": null,
+      "counter_days": null,
+      "freezer_days": null,
+      "pantry_days": 365,
+      "allergen_tags": [],
+      "diet_tags": ["vegan", "vegetarian", "gluten_free", "dairy_free"]
+    },
+    {
+      "name": "Brown Sugar",
+      "aliases": ["light brown sugar", "dark brown sugar", "soft brown sugar"],
+      "category": "pantry",
+      "default_storage_location": "pantry",
+      "shelf_life_model": "spoilage",
+      "fridge_days": null,
+      "counter_days": null,
+      "freezer_days": null,
+      "pantry_days": 730,
+      "allergen_tags": [],
+      "diet_tags": ["vegan", "vegetarian", "gluten_free", "dairy_free"]
     }
   ]
 }
