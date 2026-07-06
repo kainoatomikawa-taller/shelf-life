@@ -136,7 +136,8 @@ async def test_persists_one_item_per_true_gap() -> None:
 
     persisted = await repo.list_by_user(USER_ID)
     assert {i.ingredient_id for i in persisted} == {EGGS, MILK}
-    assert {i.recipe_id for i in persisted} == {RECIPE_ID}
+    assert all(i.source_recipe_ids == [RECIPE_ID] for i in persisted)
+    assert all(i.checked is False for i in persisted)
 
 
 @pytest.mark.asyncio

@@ -92,7 +92,7 @@ class AddShoppingListItemsUseCase:
                 id=str(uuid.uuid4()),
                 user_id=dto.user_id,
                 ingredient_id=ingredient_id,
-                recipe_id=recipe.id,
+                source_recipe_ids=[recipe.id],
                 added_at=now,
             )
             await self._shopping_list_item_repository.add(item)

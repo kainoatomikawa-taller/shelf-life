@@ -446,9 +446,7 @@ class RecipeModel(Base):
     )
 
     __table_args__ = (
-        CheckConstraint(
-            "time_minutes > 0", name="ck_recipes_time_minutes_positive"
-        ),
+        CheckConstraint("time_minutes > 0", name="ck_recipes_time_minutes_positive"),
         CheckConstraint(
             "popularity_score >= 0", name="ck_recipes_popularity_score_non_negative"
         ),
@@ -490,8 +488,10 @@ class ShoppingListItemModel(Base):
     """Persistence representation of a user's shopping list item (§8 schema).
 
     Populated by AddShoppingListItemsUseCase's one-tap add (§5.4) — one row
-    per true-gap ingredient the user committed to buy. recipe_id is
-    provenance only; it doesn't gate anything at read time.
+    per true-gap ingredient the user committed to buy. source_recipe_ids is
+    provenance only; it doesn't gate anything at read time. quantity_needed
+    is flattened into amount/unit columns, following the same convention as
+    PantryItem's Quantity value object.
     """
 
     __tablename__ = "shopping_list_items"
@@ -509,9 +509,51 @@ class ShoppingListItemModel(Base):
         nullable=False,
         index=True,
     )
+    source_recipe_ids: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    checked: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default="false"
+    )
+    quantity_needed_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    quantity_needed_unit: Mapped[str | None] = mapped_column(String(32), nullable=True)
+
+
+class RatingModel(Base):
+    """Persistence representation of a user's recipe rating (§8 schema).
+
+    Recorded once per cook, never edited in place — stars and quick_tags
+    capture that single moment's feedback.
+    """
+
+    __tablename__ = "ratings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     recipe_id: Mapped[str] = mapped_column(
         String(36),
         ForeignKey("recipes.id", ondelete="CASCADE"),
         nullable=False,
+        index=True,
     )
-    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    stars: Mapped[int] = mapped_column(Integer, nullable=False)
+    quick_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    made_it_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+    __table_args__ = (
+        CheckConstraint("stars >= 1 AND stars <= 5", name="ck_ratings_stars_range"),
+    )
