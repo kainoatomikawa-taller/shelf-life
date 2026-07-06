@@ -59,6 +59,34 @@ _substitution_context_type = Enum(
     name="substitution_context",
 )
 
+_diet_type = Enum(
+    "omnivore",
+    "vegetarian",
+    "vegan",
+    "pescatarian",
+    "keto",
+    "paleo",
+    "gluten_free",
+    "dairy_free",
+    "halal",
+    "kosher",
+    name="diet_type",
+)
+
+_skill_level = Enum(
+    "beginner",
+    "intermediate",
+    "advanced",
+    name="skill_level",
+)
+
+_budget_sensitivity = Enum(
+    "low",
+    "medium",
+    "high",
+    name="budget_sensitivity",
+)
+
 
 class PantryItemModel(Base):
     """Persistence representation of a pantry item."""
@@ -176,4 +204,97 @@ class SubstitutionModel(Base):
         ),
         # B-tree index supports threshold queries: WHERE confidence >= :threshold
         Index("ix_substitutions_confidence", "confidence"),
+    )
+
+
+class UserModel(Base):
+    """Persistence representation of a user's taste profile (§8/§4.6 schema).
+
+    Columns are grouped to mirror the domain split between hard constraints
+    (allergies, diet_type — safety-critical, never relaxed) and soft
+    preferences (everything else — used for ranking only). flavor_profile_*
+    and taste_vector_* flatten their respective value objects into scalar
+    columns, one per FLAVOR_DIMENSIONS entry, following the same pattern used
+    for typicalShelfLifeByStorage on ingredients.
+    """
+
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+    # --- Hard constraints (§4.6) — never relaxed for a recommendation. -----
+    allergies: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    diet_type: Mapped[str] = mapped_column(
+        _diet_type, nullable=False, server_default="omnivore"
+    )
+
+    # --- Soft preferences (§4.6) — affect ranking only. --------------------
+    disliked_ingredients: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    liked_cuisines: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+
+    flavor_profile_sweetness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_saltiness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_sourness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_bitterness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_spiciness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+    flavor_profile_umami: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+
+    skill_level: Mapped[str] = mapped_column(
+        _skill_level, nullable=False, server_default="beginner"
+    )
+    typical_time_available_minutes: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default="30"
+    )
+    equipment: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    budget_sensitivity: Mapped[str] = mapped_column(
+        _budget_sensitivity, nullable=False, server_default="medium"
+    )
+    adventurousness: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0.5"
+    )
+
+    # --- Derived (§4.6) — seeded from flavor_profile, updated by ratings. --
+    taste_vector: Mapped[list[float]] = mapped_column(
+        ARRAY(Float),
+        nullable=False,
+        server_default=text("ARRAY[0.5,0.5,0.5,0.5,0.5,0.5]::float8[]"),
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "adventurousness >= 0 AND adventurousness <= 1",
+            name="ck_users_adventurousness_range",
+        ),
+        CheckConstraint(
+            "typical_time_available_minutes > 0",
+            name="ck_users_typical_time_available_positive",
+        ),
     )

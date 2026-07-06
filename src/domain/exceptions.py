@@ -36,3 +36,11 @@ class SubstitutionNotFoundError(DomainError):
     def __init__(self, substitution_id: str) -> None:
         super().__init__(f"Substitution with id '{substitution_id}' was not found.")
         self.substitution_id = substitution_id
+
+
+class UserNotFoundError(DomainError):
+    """Raised when a user cannot be located by the repository."""
+
+    def __init__(self, user_id: str) -> None:
+        super().__init__(f"User with id '{user_id}' was not found.")
+        self.user_id = user_id
