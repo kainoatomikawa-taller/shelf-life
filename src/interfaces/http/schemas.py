@@ -88,11 +88,32 @@ class AddInventoryItemRequest(BaseModel):
     notes: str | None = None
 
 
+class UpdateQuantityStateRequest(BaseModel):
+    """Body for the one-tap Mark Low / Mark Out quick actions (§5.2 AC2)."""
+
+    quantity_state: str = Field(..., min_length=1)
+
+
+class UpdateInventoryItemDatesRequest(BaseModel):
+    """Body for the "edit dates" quick action (§5.2). Both dates are
+    replaced wholesale — omit a field (or send null) to clear it."""
+
+    purchase_date: date | None = None
+    printed_package_date: date | None = None
+
+
+class SpoilageCheckTipResponse(BaseModel):
+    smell: str
+    look: str
+    texture: str
+
+
 class InventoryItemResponse(BaseModel):
     id: str
     user_id: str
     ingredient_id: str
     ingredient_name: str
+    ingredient_category: str
     quantity_state: str
     storage_location: str
     purchase_date: date | None
@@ -100,7 +121,10 @@ class InventoryItemResponse(BaseModel):
     is_frozen: bool
     computed_freshness_date: date
     freshness_date_type: str
+    freshness_date_label: str
+    freshness_date_tooltip: str
     freshness_status: str
+    spoilage_check_tip: SpoilageCheckTipResponse | None
     added_at: datetime
     notes: str | None
 

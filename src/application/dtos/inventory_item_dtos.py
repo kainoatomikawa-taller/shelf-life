@@ -33,11 +33,45 @@ class ListInventoryItemsInput:
 
 
 @dataclass(frozen=True)
+class UpdateQuantityStateInput:
+    """Input for the one-tap Mark Low / Mark Out quick actions (§5.2 AC2)."""
+
+    item_id: str
+    quantity_state: str
+
+
+@dataclass(frozen=True)
+class UpdateInventoryItemDatesInput:
+    """Input for the "edit dates" quick action (§5.2). Both dates are
+    replaced wholesale — pass None to clear a date."""
+
+    item_id: str
+    purchase_date: date | None = None
+    printed_package_date: date | None = None
+
+
+@dataclass(frozen=True)
+class RemoveInventoryItemInput:
+    """Input for the "used it up" / "delete" quick actions (§5.2 AC2):
+    both remove the item outright, once it's no longer worth tracking."""
+
+    item_id: str
+
+
+@dataclass(frozen=True)
+class SpoilageCheckTipOutput:
+    smell: str
+    look: str
+    texture: str
+
+
+@dataclass(frozen=True)
 class InventoryItemOutput:
     id: str
     user_id: str
     ingredient_id: str
     ingredient_name: str
+    ingredient_category: str
     quantity_state: str
     storage_location: str
     purchase_date: date | None
@@ -45,6 +79,9 @@ class InventoryItemOutput:
     is_frozen: bool
     computed_freshness_date: date
     freshness_date_type: str
+    freshness_date_label: str
+    freshness_date_tooltip: str
     freshness_status: str
+    spoilage_check_tip: SpoilageCheckTipOutput | None
     added_at: datetime
     notes: str | None

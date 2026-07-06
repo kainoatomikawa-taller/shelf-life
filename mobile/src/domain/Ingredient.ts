@@ -55,6 +55,12 @@ export function quantityStateLabel(state: QuantityState): string {
   }
 }
 
+/** Pantry and spice items are long-lived and belong in their own view,
+ * separate from perishables that need active freshness tracking (§5.2 AC3). */
+export function isLongLivedCategory(category: IngredientCategory): boolean {
+  return category === 'pantry' || category === 'spice';
+}
+
 /** The alias that matched the search query, if the match wasn't on the
  * canonical name — lets the UI confirm "scallion" resolved to "Green
  * Onions" (§5.2 AC1). */

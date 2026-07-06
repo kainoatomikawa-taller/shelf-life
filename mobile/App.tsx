@@ -6,33 +6,33 @@
 import React, {useState} from 'react';
 import {SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
+import {KitchenScreen} from './src/ui/kitchen/KitchenScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
-import {PantryScreen} from './src/ui/PantryScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
 
 const DEMO_USER_ID = 'demo-user';
 
-type Tab = 'pantry' | 'add' | 'profile';
+type Tab = 'kitchen' | 'add' | 'profile';
 
 function App(): React.JSX.Element {
   const [onboarded, setOnboarded] = useState(false);
-  const [activeTab, setActiveTab] = useState<Tab>('pantry');
+  const [activeTab, setActiveTab] = useState<Tab>('kitchen');
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" />
       {onboarded ? (
         <>
-          {activeTab === 'pantry' && <PantryScreen />}
+          {activeTab === 'kitchen' && <KitchenScreen userId={DEMO_USER_ID} />}
           {activeTab === 'add' && <AddItemScreen userId={DEMO_USER_ID} />}
           {activeTab === 'profile' && <ProfileScreen userId={DEMO_USER_ID} />}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={styles.tabButton}
-              onPress={() => setActiveTab('pantry')}>
+              onPress={() => setActiveTab('kitchen')}>
               <Text
-                style={[styles.tabLabel, activeTab === 'pantry' && styles.tabLabelActive]}>
-                Pantry
+                style={[styles.tabLabel, activeTab === 'kitchen' && styles.tabLabelActive]}>
+                Kitchen
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

@@ -110,6 +110,30 @@ def test_update_quantity_state_rejects_invalid_value() -> None:
         item.update_quantity_state("low")  # type: ignore[arg-type]
 
 
+def test_update_dates_recomputes_freshness_from_the_new_purchase_date() -> None:
+    """§5.2 AC: the "edit dates" quick action corrects a wrong date."""
+    item = _item()  # created with no purchase/package date known
+    ingredient = _ingredient()
+    corrected_purchase_date = TODAY - timedelta(days=2)
+
+    item.update_dates(ingredient, TODAY, purchase_date=corrected_purchase_date)
+
+    assert item.purchase_date == corrected_purchase_date
+    assert item.computed_freshness_date == corrected_purchase_date + timedelta(days=7)
+    assert item.freshness_date_type == FreshnessDateType.ESTIMATED_FROM_PURCHASE
+
+
+def test_update_dates_can_clear_a_previously_set_date() -> None:
+    package_date = TODAY + timedelta(days=5)
+    item = _item(printed_package_date=package_date)
+    ingredient = _ingredient()
+
+    item.update_dates(ingredient, TODAY)
+
+    assert item.printed_package_date is None
+    assert item.freshness_date_type == FreshnessDateType.ESTIMATED_UNKNOWN
+
+
 def test_move_storage_recomputes_freshness_for_new_location() -> None:
     purchase_date = TODAY - timedelta(days=1)
     item = _item(purchase_date=purchase_date)

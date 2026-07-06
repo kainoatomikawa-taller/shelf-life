@@ -219,6 +219,22 @@ class InventoryItem:
         self._freshness_date_type = date_type
         self._freshness_status = status
 
+    def update_dates(
+        self,
+        ingredient: Ingredient,
+        today: date,
+        purchase_date: date | None = None,
+        printed_package_date: date | None = None,
+        calculator: FreshnessCalculator | None = None,
+        status_resolver: FreshnessStatusResolver | None = None,
+    ) -> None:
+        """Correct the purchase and/or printed package date (the "edit
+        dates" quick action, §5.2) and recompute freshness to match.
+        """
+        self._purchase_date = purchase_date
+        self._printed_package_date = printed_package_date
+        self.refresh_freshness(ingredient, today, calculator, status_resolver)
+
     def move_storage(
         self,
         storage_location: StorageLocation,

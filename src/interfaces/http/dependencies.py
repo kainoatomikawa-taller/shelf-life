@@ -25,8 +25,15 @@ from src.application.use_cases.consume_pantry_item import (
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
+from src.application.use_cases.remove_inventory_item import RemoveInventoryItemUseCase
 from src.application.use_cases.search_ingredients import SearchIngredientsUseCase
 from src.application.use_cases.submit_onboarding import SubmitOnboardingUseCase
+from src.application.use_cases.update_inventory_item_dates import (
+    UpdateInventoryItemDatesUseCase,
+)
+from src.application.use_cases.update_inventory_item_quantity_state import (
+    UpdateInventoryItemQuantityStateUseCase,
+)
 from src.domain.services.expiration_service import ExpirationService
 from src.infrastructure.database.engine import get_session
 from src.infrastructure.repositories.postgres_ingredient_repository import (
@@ -158,4 +165,44 @@ def get_list_inventory_items_use_case(
 
 ListInventoryItemsUseCaseDep = Annotated[
     ListInventoryItemsUseCase, Depends(get_list_inventory_items_use_case)
+]
+
+
+def get_update_inventory_item_quantity_state_use_case(
+    inventory_repository: InventoryItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+) -> UpdateInventoryItemQuantityStateUseCase:
+    return UpdateInventoryItemQuantityStateUseCase(
+        inventory_repository, ingredient_repository
+    )
+
+
+UpdateInventoryItemQuantityStateUseCaseDep = Annotated[
+    UpdateInventoryItemQuantityStateUseCase,
+    Depends(get_update_inventory_item_quantity_state_use_case),
+]
+
+
+def get_update_inventory_item_dates_use_case(
+    inventory_repository: InventoryItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+) -> UpdateInventoryItemDatesUseCase:
+    return UpdateInventoryItemDatesUseCase(
+        inventory_repository, ingredient_repository
+    )
+
+
+UpdateInventoryItemDatesUseCaseDep = Annotated[
+    UpdateInventoryItemDatesUseCase, Depends(get_update_inventory_item_dates_use_case)
+]
+
+
+def get_remove_inventory_item_use_case(
+    inventory_repository: InventoryItemRepositoryDep,
+) -> RemoveInventoryItemUseCase:
+    return RemoveInventoryItemUseCase(inventory_repository)
+
+
+RemoveInventoryItemUseCaseDep = Annotated[
+    RemoveInventoryItemUseCase, Depends(get_remove_inventory_item_use_case)
 ]

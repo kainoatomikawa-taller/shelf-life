@@ -90,6 +90,22 @@ async def test_shelf_life_is_derived_from_category_when_dates_are_skipped() -> N
 
 
 @pytest.mark.asyncio
+async def test_output_carries_the_labeled_freshness_date() -> None:
+    """Kitchen list AC1: rows show the correct labeled freshness date."""
+    inventory_repo, ingredient_repo = await _repos_with_milk()
+    use_case = AddInventoryItemUseCase(inventory_repo, ingredient_repo)
+
+    output = await use_case.execute(
+        AddInventoryItemInput(user_id="user-1", ingredient_id="ingredient-milk")
+    )
+
+    assert output.freshness_date_label == "Check by (est.)"
+    assert "cautious guess" in output.freshness_date_tooltip
+    assert output.ingredient_category == "perishable_fridge"
+    assert output.spoilage_check_tip is None
+
+
+@pytest.mark.asyncio
 async def test_explicit_storage_location_overrides_the_default() -> None:
     inventory_repo, ingredient_repo = await _repos_with_milk()
     use_case = AddInventoryItemUseCase(inventory_repo, ingredient_repo)
