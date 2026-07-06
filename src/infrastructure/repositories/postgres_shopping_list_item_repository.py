@@ -6,7 +6,7 @@ only translates persistence concerns.
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.entities.shopping_list_item import ShoppingListItem
@@ -27,6 +27,13 @@ class PostgresShoppingListItemRepository(ShoppingListItemRepository):
         self._session.add(self._to_model(item))
         await self._session.commit()
 
+    async def get_by_id(self, item_id: str) -> ShoppingListItem | None:
+        result = await self._session.execute(
+            select(ShoppingListItemModel).where(ShoppingListItemModel.id == item_id)
+        )
+        model = result.scalar_one_or_none()
+        return self._to_entity(model) if model else None
+
     async def list_by_user(self, user_id: str) -> list[ShoppingListItem]:
         result = await self._session.execute(
             select(ShoppingListItemModel).where(
@@ -35,24 +42,39 @@ class PostgresShoppingListItemRepository(ShoppingListItemRepository):
         )
         return [self._to_entity(model) for model in result.scalars().all()]
 
+    async def update(self, item: ShoppingListItem) -> None:
+        model = await self._session.get(ShoppingListItemModel, item.id)
+        if model is None:
+            return
+        self._apply_to_model(item, model)
+        await self._session.commit()
+
+    async def remove(self, item_id: str) -> None:
+        await self._session.execute(
+            delete(ShoppingListItemModel).where(ShoppingListItemModel.id == item_id)
+        )
+        await self._session.commit()
+
     # --- Mapping helpers ----------------------------------------------------
 
+    @classmethod
+    def _to_model(cls, item: ShoppingListItem) -> ShoppingListItemModel:
+        model = ShoppingListItemModel(id=item.id, user_id=item.user_id)
+        cls._apply_to_model(item, model)
+        return model
+
     @staticmethod
-    def _to_model(item: ShoppingListItem) -> ShoppingListItemModel:
+    def _apply_to_model(item: ShoppingListItem, model: ShoppingListItemModel) -> None:
         quantity_needed = item.quantity_needed
-        return ShoppingListItemModel(
-            id=item.id,
-            user_id=item.user_id,
-            ingredient_id=item.ingredient_id,
-            source_recipe_ids=item.source_recipe_ids,
-            added_at=item.added_at,
-            checked=item.checked,
-            quantity_needed_amount=(
-                quantity_needed.amount if quantity_needed else None
-            ),
-            quantity_needed_unit=(
-                quantity_needed.unit.value if quantity_needed else None
-            ),
+        model.ingredient_id = item.ingredient_id
+        model.source_recipe_ids = item.source_recipe_ids
+        model.added_at = item.added_at
+        model.checked = item.checked
+        model.quantity_needed_amount = (
+            quantity_needed.amount if quantity_needed else None
+        )
+        model.quantity_needed_unit = (
+            quantity_needed.unit.value if quantity_needed else None
         )
 
     @staticmethod

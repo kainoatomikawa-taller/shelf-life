@@ -175,6 +175,29 @@ class ShoppingListResponse(BaseModel):
     items: list[ShoppingListItemResponse]
 
 
+class ShoppingListEntryResponse(BaseModel):
+    id: str
+    ingredient_id: str
+    ingredient_name: str
+    checked: bool
+    quantity_needed_amount: float | None
+    quantity_needed_unit: str | None
+
+
+class CheckShoppingListItemRequest(BaseModel):
+    """Body for the check-off-as-you-shop interaction (§5.7 AC2)."""
+
+    checked: bool
+
+
+class AddPurchasesToKitchenRequest(BaseModel):
+    """Body for the "add these to my Kitchen" trip-complete action (§5.7
+    AC3). purchase_date defaults to today when omitted."""
+
+    user_id: str = Field(..., min_length=1)
+    purchase_date: date | None = None
+
+
 class UserProfileResponse(BaseModel):
     id: str
     allergies: list[str]

@@ -50,9 +50,9 @@ def test_mark_checked_and_unchecked() -> None:
     assert item.checked is False
 
 
-def test_rejects_empty_source_recipe_ids() -> None:
-    with pytest.raises(ValidationError):
-        _item(source_recipe_ids=[])
+def test_allows_empty_source_recipe_ids_for_low_stock_flagged_items() -> None:
+    item = _item(source_recipe_ids=[])
+    assert item.source_recipe_ids == []
 
 
 def test_rejects_missing_required_fields() -> None:

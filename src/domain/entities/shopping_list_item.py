@@ -1,11 +1,13 @@
 """ShoppingListItem entity.
 
-One ingredient a user has committed to buy after generating a Discover
-recipe's shopping list (§5.4) and tapping "add" (§8). source_recipe_ids
+One ingredient a user has committed to buy, sourced either from a Discover
+recipe's shopping list (§5.4, tapping "add") or from an ingredient newly
+flagged Low/Out in the Kitchen inventory (§5.7 AC1). source_recipe_ids
 records every recipe that has called for this ingredient — provenance
 only, it doesn't gate anything, so items from different recipes calling
-for the same ingredient simply coexist under one row. checked tracks
-whether the user has picked it up while shopping.
+for the same ingredient simply coexist under one row. It is empty for
+items sourced purely from a Low/Out inventory flag, which has no recipe
+behind it. checked tracks whether the user has picked it up while shopping.
 """
 
 from __future__ import annotations
@@ -35,11 +37,6 @@ class ShoppingListItem:
             raise ValidationError("ShoppingListItem user_id is required.")
         if not ingredient_id:
             raise ValidationError("ShoppingListItem ingredient_id is required.")
-        if not source_recipe_ids:
-            raise ValidationError(
-                "ShoppingListItem source_recipe_ids must contain at least one "
-                "recipe id."
-            )
 
         self._id = id
         self._user_id = user_id

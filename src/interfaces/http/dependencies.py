@@ -19,8 +19,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.use_cases.add_inventory_item import AddInventoryItemUseCase
 from src.application.use_cases.add_pantry_item import AddPantryItemUseCase
+from src.application.use_cases.add_purchases_to_kitchen import (
+    AddPurchasesToKitchenUseCase,
+)
 from src.application.use_cases.add_shopping_list_items import (
     AddShoppingListItemsUseCase,
+)
+from src.application.use_cases.check_shopping_list_item import (
+    CheckShoppingListItemUseCase,
 )
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
@@ -30,6 +36,7 @@ from src.application.use_cases.generate_shopping_list_for_recipe import (
 )
 from src.application.use_cases.get_cook_now_feed import GetCookNowFeedUseCase
 from src.application.use_cases.get_discover_feed import GetDiscoverFeedUseCase
+from src.application.use_cases.get_shopping_list import GetShoppingListUseCase
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
@@ -340,4 +347,57 @@ def get_add_shopping_list_items_use_case(
 
 AddShoppingListItemsUseCaseDep = Annotated[
     AddShoppingListItemsUseCase, Depends(get_add_shopping_list_items_use_case)
+]
+
+
+def get_get_shopping_list_use_case(
+    shopping_list_item_repository: ShoppingListItemRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> GetShoppingListUseCase:
+    return GetShoppingListUseCase(
+        shopping_list_item_repository=shopping_list_item_repository,
+        inventory_item_repository=inventory_item_repository,
+        ingredient_repository=ingredient_repository,
+        user_repository=user_repository,
+    )
+
+
+GetShoppingListUseCaseDep = Annotated[
+    GetShoppingListUseCase, Depends(get_get_shopping_list_use_case)
+]
+
+
+def get_check_shopping_list_item_use_case(
+    shopping_list_item_repository: ShoppingListItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+) -> CheckShoppingListItemUseCase:
+    return CheckShoppingListItemUseCase(
+        shopping_list_item_repository=shopping_list_item_repository,
+        ingredient_repository=ingredient_repository,
+    )
+
+
+CheckShoppingListItemUseCaseDep = Annotated[
+    CheckShoppingListItemUseCase, Depends(get_check_shopping_list_item_use_case)
+]
+
+
+def get_add_purchases_to_kitchen_use_case(
+    shopping_list_item_repository: ShoppingListItemRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> AddPurchasesToKitchenUseCase:
+    return AddPurchasesToKitchenUseCase(
+        shopping_list_item_repository=shopping_list_item_repository,
+        inventory_item_repository=inventory_item_repository,
+        ingredient_repository=ingredient_repository,
+        user_repository=user_repository,
+    )
+
+
+AddPurchasesToKitchenUseCaseDep = Annotated[
+    AddPurchasesToKitchenUseCase, Depends(get_add_purchases_to_kitchen_use_case)
 ]
