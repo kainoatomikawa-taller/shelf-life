@@ -40,6 +40,20 @@ function toDomain(dto: UserProfileResponse): UserProfile {
 export class UserApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
+  /** Returns null if the user hasn't completed onboarding yet. */
+  async getProfile(userId: string): Promise<UserProfile | null> {
+    const res = await fetch(
+      `${this.baseUrl}/users/${encodeURIComponent(userId)}/profile`,
+    );
+    if (res.status === 404) {
+      return null;
+    }
+    if (!res.ok) {
+      throw new Error(`Failed to load profile: ${res.status}`);
+    }
+    return toDomain((await res.json()) as UserProfileResponse);
+  }
+
   async submitOnboarding(
     userId: string,
     answers: OnboardingAnswers,

@@ -71,3 +71,24 @@ async def test_resubmission_updates_existing_user_without_resetting_taste_vector
     assert output.diet_type == "vegetarian"
     # Re-submitting preferences must not overwrite the drifted taste vector.
     assert output.taste_vector["sweetness"] == drifted_sweetness
+
+
+@pytest.mark.asyncio
+async def test_allergy_update_immediately_affects_conflict_checks() -> None:
+    """An edited allergy list must protect the very next read — recipe
+    filtering must never rely on stale hard constraints (§6 AC2)."""
+    repo = InMemoryUserRepository()
+    use_case = SubmitOnboardingUseCase(repo)
+
+    await use_case.execute(SubmitOnboardingInput(user_id="user-1"))
+    user = await repo.get_by_id("user-1")
+    assert user is not None
+    assert user.has_allergy_conflict(["peanuts"]) is False
+
+    await use_case.execute(
+        SubmitOnboardingInput(user_id="user-1", allergies=("peanuts",))
+    )
+
+    user = await repo.get_by_id("user-1")
+    assert user is not None
+    assert user.has_allergy_conflict(["peanuts"]) is True

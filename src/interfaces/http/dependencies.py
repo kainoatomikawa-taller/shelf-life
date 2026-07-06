@@ -21,6 +21,7 @@ from src.application.use_cases.add_pantry_item import AddPantryItemUseCase
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
+from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
 from src.application.use_cases.submit_onboarding import SubmitOnboardingUseCase
 from src.domain.services.expiration_service import ExpirationService
@@ -80,4 +81,15 @@ def get_submit_onboarding_use_case(
 
 SubmitOnboardingUseCaseDep = Annotated[
     SubmitOnboardingUseCase, Depends(get_submit_onboarding_use_case)
+]
+
+
+def get_user_profile_use_case(
+    repository: UserRepositoryDep,
+) -> GetUserProfileUseCase:
+    return GetUserProfileUseCase(repository)
+
+
+GetUserProfileUseCaseDep = Annotated[
+    GetUserProfileUseCase, Depends(get_user_profile_use_case)
 ]

@@ -77,3 +77,18 @@ export interface UserProfile {
   readonly adventurousness: number;
   readonly tasteVector: FlavorProfile;
 }
+
+/** The editable subset of a persisted profile — excludes id and the derived tasteVector. */
+export function toOnboardingAnswers(profile: UserProfile): OnboardingAnswers {
+  return {
+    allergies: profile.allergies,
+    dietType: profile.dietType,
+    likedCuisines: profile.likedCuisines,
+    flavorProfile: profile.flavorProfile,
+    skillLevel: profile.skillLevel,
+    typicalTimeAvailableMinutes: profile.typicalTimeAvailableMinutes,
+    equipment: profile.equipment,
+    budgetSensitivity: profile.budgetSensitivity,
+    adventurousness: profile.adventurousness,
+  };
+}

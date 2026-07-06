@@ -11,10 +11,28 @@ from dataclasses import asdict
 from fastapi import APIRouter, HTTPException, status
 
 from src.application.dtos.user_dtos import FlavorProfileInput, SubmitOnboardingInput
-from src.interfaces.http.dependencies import SubmitOnboardingUseCaseDep
+from src.domain.exceptions import UserNotFoundError
+from src.interfaces.http.dependencies import (
+    GetUserProfileUseCaseDep,
+    SubmitOnboardingUseCaseDep,
+)
 from src.interfaces.http.schemas import OnboardingRequest, UserProfileResponse
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/{user_id}/profile", response_model=UserProfileResponse)
+async def get_user_profile(
+    user_id: str,
+    use_case: GetUserProfileUseCaseDep,
+) -> UserProfileResponse:
+    try:
+        output = await use_case.execute(user_id)
+    except UserNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    return UserProfileResponse(**asdict(output))
 
 
 @router.put("/{user_id}/profile", response_model=UserProfileResponse)
