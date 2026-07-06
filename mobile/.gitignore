@@ -14,6 +14,9 @@ ios/Pods/
 *.ipa
 *.apk
 
+# machine-specific
+ios/.xcode.env.local
+
 # misc
 .DS_Store
 *.log
