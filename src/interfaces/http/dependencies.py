@@ -22,6 +22,7 @@ from src.application.use_cases.add_pantry_item import AddPantryItemUseCase
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
+from src.application.use_cases.get_cook_now_feed import GetCookNowFeedUseCase
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
@@ -44,6 +45,12 @@ from src.infrastructure.repositories.postgres_inventory_item_repository import (
 )
 from src.infrastructure.repositories.postgres_pantry_item_repository import (
     PostgresPantryItemRepository,
+)
+from src.infrastructure.repositories.postgres_recipe_repository import (
+    PostgresRecipeRepository,
+)
+from src.infrastructure.repositories.postgres_substitution_repository import (
+    PostgresSubstitutionRepository,
 )
 from src.infrastructure.repositories.postgres_user_repository import (
     PostgresUserRepository,
@@ -205,4 +212,45 @@ def get_remove_inventory_item_use_case(
 
 RemoveInventoryItemUseCaseDep = Annotated[
     RemoveInventoryItemUseCase, Depends(get_remove_inventory_item_use_case)
+]
+
+
+def get_recipe_repository(session: SessionDep) -> PostgresRecipeRepository:
+    return PostgresRecipeRepository(session)
+
+
+RecipeRepositoryDep = Annotated[
+    PostgresRecipeRepository, Depends(get_recipe_repository)
+]
+
+
+def get_substitution_repository(
+    session: SessionDep,
+) -> PostgresSubstitutionRepository:
+    return PostgresSubstitutionRepository(session)
+
+
+SubstitutionRepositoryDep = Annotated[
+    PostgresSubstitutionRepository, Depends(get_substitution_repository)
+]
+
+
+def get_cook_now_feed_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    substitution_repository: SubstitutionRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> GetCookNowFeedUseCase:
+    return GetCookNowFeedUseCase(
+        recipe_repository=recipe_repository,
+        substitution_repository=substitution_repository,
+        ingredient_repository=ingredient_repository,
+        inventory_item_repository=inventory_item_repository,
+        user_repository=user_repository,
+    )
+
+
+GetCookNowFeedUseCaseDep = Annotated[
+    GetCookNowFeedUseCase, Depends(get_cook_now_feed_use_case)
 ]

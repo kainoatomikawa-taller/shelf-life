@@ -14,6 +14,9 @@ from fastapi import FastAPI
 from src.interfaces.http.controllers.catalog_controller import (
     router as catalog_router,
 )
+from src.interfaces.http.controllers.cook_now_controller import (
+    router as cook_now_router,
+)
 from src.interfaces.http.controllers.inventory_controller import (
     router as inventory_router,
 )
@@ -53,6 +56,7 @@ def create_app() -> FastAPI:
     app.include_router(user_router)
     app.include_router(catalog_router)
     app.include_router(inventory_router)
+    app.include_router(cook_now_router)
     return app
 
 

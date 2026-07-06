@@ -23,6 +23,15 @@ class RecipeRepository(ABC):
         """Return the recipe with the given id, or None."""
 
     @abstractmethod
+    async def list_all(self) -> list[Recipe]:
+        """Return every recipe in the catalog.
+
+        The candidate pool for the Cook Now feed (§10 Steps 1-4): the feed
+        use case hard-filters and ranks this full list rather than a
+        pre-narrowed one, so ranking stays in the domain/application layers.
+        """
+
+    @abstractmethod
     async def list_by_ingredient(self, ingredient_id: str) -> list[Recipe]:
         """Return all recipes that call for the given ingredient."""
 

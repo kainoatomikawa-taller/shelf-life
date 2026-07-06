@@ -13,7 +13,7 @@ import {ProfileScreen} from './src/ui/profile/ProfileScreen';
 
 const DEMO_USER_ID = 'demo-user';
 
-type Tab = 'kitchen' | 'add' | 'profile';
+type Tab = 'kitchen' | 'cookNow' | 'add' | 'profile';
 
 function App(): React.JSX.Element {
   const [onboarded, setOnboarded] = useState(false);
@@ -31,6 +31,7 @@ function App(): React.JSX.Element {
       )}
       {onboarded && cookNowIngredient && (
         <CookNowScreen
+          userId={DEMO_USER_ID}
           filterIngredientName={cookNowIngredient}
           onBack={() => setCookNowIngredient(null)}
         />
@@ -43,6 +44,12 @@ function App(): React.JSX.Element {
               onCookNow={item => setCookNowIngredient(item.ingredientName)}
             />
           )}
+          {activeTab === 'cookNow' && (
+            <CookNowScreen
+              userId={DEMO_USER_ID}
+              onBack={() => setActiveTab('kitchen')}
+            />
+          )}
           {activeTab === 'add' && <AddItemScreen userId={DEMO_USER_ID} />}
           {activeTab === 'profile' && <ProfileScreen userId={DEMO_USER_ID} />}
           <View style={styles.tabBar}>
@@ -52,6 +59,14 @@ function App(): React.JSX.Element {
               <Text
                 style={[styles.tabLabel, activeTab === 'kitchen' && styles.tabLabelActive]}>
                 Kitchen
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => setActiveTab('cookNow')}>
+              <Text
+                style={[styles.tabLabel, activeTab === 'cookNow' && styles.tabLabelActive]}>
+                Cook Now
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

@@ -1,0 +1,185 @@
+{
+  "meta": {
+    "notes": [
+      "All ingredient names must match a row in the ingredients catalog (seed_ingredients.py).",
+      "ingredients: each entry is {name, role: essential|optional}.",
+      "flavor_profile fields default to 0.5 (neutral) when omitted."
+    ]
+  },
+  "recipes": [
+    {
+      "name": "Lemon Herb Chicken",
+      "ingredients": [
+        {"name": "Chicken Pieces, Raw", "role": "essential"},
+        {"name": "Lemons", "role": "essential"},
+        {"name": "Garlic", "role": "essential"},
+        {"name": "Olive Oil", "role": "essential"},
+        {"name": "Black Pepper, Ground", "role": "optional"}
+      ],
+      "steps": [
+        "Season chicken with salt and pepper.",
+        "Whisk lemon juice, garlic, and olive oil for a marinade.",
+        "Marinate chicken 20 minutes, then pan-sear until cooked through."
+      ],
+      "time_minutes": 30,
+      "difficulty": "intermediate",
+      "cuisine_tags": ["mediterranean"],
+      "flavor_tags": ["savory", "bright"],
+      "technique_tags": ["searing"],
+      "equipment_needed": [],
+      "popularity_score": 0.7,
+      "flavor_profile": {"sourness": 0.6, "saltiness": 0.55, "umami": 0.6}
+    },
+    {
+      "name": "Creamy Mashed Potatoes",
+      "ingredients": [
+        {"name": "Potatoes", "role": "essential"},
+        {"name": "Sour Cream", "role": "essential"},
+        {"name": "Butter", "role": "essential"},
+        {"name": "Black Pepper, Ground", "role": "optional"}
+      ],
+      "steps": [
+        "Boil potatoes until fork-tender.",
+        "Mash with butter and sour cream until smooth.",
+        "Season to taste."
+      ],
+      "time_minutes": 35,
+      "difficulty": "beginner",
+      "cuisine_tags": ["american"],
+      "flavor_tags": ["savory", "creamy"],
+      "technique_tags": ["boiling"],
+      "equipment_needed": [],
+      "popularity_score": 0.6,
+      "flavor_profile": {"saltiness": 0.55, "umami": 0.5}
+    },
+    {
+      "name": "Garlic Broccoli Stir Fry",
+      "ingredients": [
+        {"name": "Broccoli", "role": "essential"},
+        {"name": "Garlic", "role": "essential"},
+        {"name": "Olive Oil", "role": "essential"},
+        {"name": "Soy Sauce", "role": "essential"},
+        {"name": "White Rice", "role": "optional"}
+      ],
+      "steps": [
+        "Heat oil in a wok over high heat.",
+        "Stir-fry garlic and broccoli until crisp-tender.",
+        "Toss with soy sauce and serve, over rice if desired."
+      ],
+      "time_minutes": 20,
+      "difficulty": "beginner",
+      "cuisine_tags": ["chinese"],
+      "flavor_tags": ["savory"],
+      "technique_tags": ["stir-frying"],
+      "equipment_needed": ["wok"],
+      "popularity_score": 0.55,
+      "flavor_profile": {"saltiness": 0.6, "umami": 0.65}
+    },
+    {
+      "name": "Pepper Steak",
+      "ingredients": [
+        {"name": "Beef Steak", "role": "essential"},
+        {"name": "Bell Peppers", "role": "essential"},
+        {"name": "Black Pepper, Ground", "role": "essential"},
+        {"name": "Soy Sauce", "role": "essential"},
+        {"name": "Onions", "role": "optional"}
+      ],
+      "steps": [
+        "Slice steak and peppers into thin strips.",
+        "Sear steak over high heat, then add peppers and onions.",
+        "Finish with soy sauce and cracked pepper."
+      ],
+      "time_minutes": 25,
+      "difficulty": "intermediate",
+      "cuisine_tags": ["chinese-american"],
+      "flavor_tags": ["savory", "peppery"],
+      "technique_tags": ["stir-frying"],
+      "equipment_needed": ["wok"],
+      "popularity_score": 0.65,
+      "flavor_profile": {"spiciness": 0.55, "umami": 0.7, "saltiness": 0.6}
+    },
+    {
+      "name": "Fruit & Yogurt Bowl",
+      "ingredients": [
+        {"name": "Yogurt, Plain", "role": "essential"},
+        {"name": "Strawberries", "role": "essential"},
+        {"name": "Honey", "role": "essential"},
+        {"name": "Bananas", "role": "optional"}
+      ],
+      "steps": [
+        "Spoon yogurt into a bowl.",
+        "Top with sliced strawberries and a drizzle of honey."
+      ],
+      "time_minutes": 10,
+      "difficulty": "beginner",
+      "cuisine_tags": ["american"],
+      "flavor_tags": ["sweet", "fresh"],
+      "technique_tags": ["assembling"],
+      "equipment_needed": [],
+      "popularity_score": 0.5,
+      "flavor_profile": {"sweetness": 0.65, "sourness": 0.4}
+    },
+    {
+      "name": "Grilled Cheese Sandwich",
+      "ingredients": [
+        {"name": "Bread, Commercial", "role": "essential"},
+        {"name": "Cheddar Cheese", "role": "essential"},
+        {"name": "Butter", "role": "essential"}
+      ],
+      "steps": [
+        "Butter the outside of two bread slices.",
+        "Fill with cheddar and grill in a skillet until golden on both sides."
+      ],
+      "time_minutes": 10,
+      "difficulty": "beginner",
+      "cuisine_tags": ["american"],
+      "flavor_tags": ["savory", "comfort"],
+      "technique_tags": ["pan-frying"],
+      "equipment_needed": [],
+      "popularity_score": 0.75,
+      "flavor_profile": {"saltiness": 0.6, "umami": 0.55}
+    },
+    {
+      "name": "Veggie Scramble",
+      "ingredients": [
+        {"name": "Eggs", "role": "essential"},
+        {"name": "Spinach", "role": "essential"},
+        {"name": "Onions", "role": "essential"},
+        {"name": "Cheddar Cheese", "role": "optional"}
+      ],
+      "steps": [
+        "Saute onions and spinach until soft.",
+        "Add beaten eggs and scramble until just set."
+      ],
+      "time_minutes": 15,
+      "difficulty": "beginner",
+      "cuisine_tags": ["american"],
+      "flavor_tags": ["savory"],
+      "technique_tags": ["pan-frying"],
+      "equipment_needed": [],
+      "popularity_score": 0.6,
+      "flavor_profile": {"saltiness": 0.5, "umami": 0.5}
+    },
+    {
+      "name": "Spicy Kimchi Fried Rice",
+      "ingredients": [
+        {"name": "White Rice", "role": "essential"},
+        {"name": "Eggs", "role": "essential"},
+        {"name": "Garlic", "role": "essential"},
+        {"name": "Green Onions", "role": "optional"}
+      ],
+      "steps": [
+        "Fry garlic in a hot pan, then add day-old rice.",
+        "Stir-fry until crisped, then top with a fried egg and green onions."
+      ],
+      "time_minutes": 20,
+      "difficulty": "intermediate",
+      "cuisine_tags": ["korean"],
+      "flavor_tags": ["spicy", "umami"],
+      "technique_tags": ["stir-frying"],
+      "equipment_needed": ["wok"],
+      "popularity_score": 0.4,
+      "flavor_profile": {"spiciness": 0.75, "umami": 0.8, "saltiness": 0.6}
+    }
+  ]
+}

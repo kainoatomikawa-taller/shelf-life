@@ -129,6 +129,32 @@ class InventoryItemResponse(BaseModel):
     notes: str | None
 
 
+class SubstitutionSuggestionResponse(BaseModel):
+    from_ingredient_id: str
+    from_ingredient_name: str
+    to_ingredient_id: str
+    to_ingredient_name: str
+    disclosure: str
+    ratio_note: str | None
+    confidence: float
+
+
+class RecipeBadgesResponse(BaseModel):
+    expiring_ingredient_name: str | None
+    low_stock_ingredient_name: str | None
+    substitution_count: int
+
+
+class RecipeCardResponse(BaseModel):
+    id: str
+    name: str
+    time_minutes: int
+    difficulty: str
+    cuisine_tags: list[str]
+    badges: RecipeBadgesResponse
+    substitutions: list[SubstitutionSuggestionResponse]
+
+
 class UserProfileResponse(BaseModel):
     id: str
     allergies: list[str]

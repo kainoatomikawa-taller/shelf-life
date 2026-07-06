@@ -1,22 +1,45 @@
 /**
- * Cook Now (§5.2) — recipe matching isn't built yet, so this is a minimal
- * landing spot for the "Use it up soon" strip's shortcut: it shows which
- * ingredient the results would be filtered by once Cook Now exists, rather
- * than fabricating recipe data.
+ * Cook Now (§5.3): For You / Explore tabs of recipes the user can cook
+ * right now, each ranked by a different algorithm — For You by
+ * content-based taste/effort/freshness fit, Explore by popularity mixed
+ * with the user's adventurousness. Cards carry badges explaining why a
+ * recipe is surfaced, with tap-to-reveal substitution detail (AC3).
  */
 
-import React from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import React, {useState} from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {SingleSelectChips} from '../add-item/components/SingleSelectChips';
+import type {CookNowTab} from '../../domain/RecipeCard';
+import {RecipeCardView} from './RecipeCardView';
+import {useCookNowFeed} from './useCookNowFeed';
 
 interface Props {
-  filterIngredientName: string;
+  userId: string;
+  filterIngredientName?: string | null;
   onBack: () => void;
 }
 
+const TABS: readonly CookNowTab[] = ['for_you', 'explore'];
+
+function tabLabel(tab: CookNowTab): string {
+  return tab === 'for_you' ? 'For You' : 'Explore';
+}
+
 export function CookNowScreen({
+  userId,
   filterIngredientName,
   onBack,
 }: Props): React.JSX.Element {
+  const [tab, setTab] = useState<CookNowTab>('for_you');
+  const {cards, loading, error} = useCookNowFeed(userId, tab);
+
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={onBack} style={styles.backButton}>
@@ -25,23 +48,44 @@ export function CookNowScreen({
 
       <Text style={styles.title}>Cook Now</Text>
 
-      <View style={styles.filterChip}>
-        <Text style={styles.filterChipText}>Using: {filterIngredientName}</Text>
-      </View>
+      {filterIngredientName && (
+        <View style={styles.filterChip}>
+          <Text style={styles.filterChipText}>
+            Using: {filterIngredientName}
+          </Text>
+        </View>
+      )}
 
-      <View style={styles.emptyState}>
-        <Text style={styles.emptyTitle}>Recipe matching is coming soon</Text>
-        <Text style={styles.emptyBody}>
-          Once Cook Now is ready, this will show recipes that use your{' '}
-          {filterIngredientName}, so it doesn't go to waste.
-        </Text>
-      </View>
+      <SingleSelectChips
+        options={TABS}
+        selected={tab}
+        onSelect={setTab}
+        labelFor={tabLabel}
+      />
+
+      {loading && <ActivityIndicator style={styles.spinner} />}
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      {!loading && !error && (
+        <FlatList
+          style={styles.list}
+          data={cards}
+          keyExtractor={card => card.id}
+          renderItem={({item}) => <RecipeCardView card={item} />}
+          ListEmptyComponent={
+            <Text style={styles.empty}>
+              No recipes you can cook right now — try restocking a few
+              essentials.
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {flex: 1, padding: 20, paddingTop: 12},
+  container: {flex: 1, padding: 20, paddingTop: 12, paddingBottom: 0},
   backButton: {marginBottom: 12, alignSelf: 'flex-start'},
   backText: {color: '#2e7d32', fontWeight: '600', fontSize: 15},
   title: {fontSize: 28, fontWeight: '700', marginBottom: 16},
@@ -51,14 +95,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 6,
     paddingHorizontal: 14,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   filterChipText: {color: '#2e7d32', fontWeight: '600', fontSize: 13},
-  emptyState: {
-    backgroundColor: '#fafafa',
-    borderRadius: 12,
-    padding: 20,
-  },
-  emptyTitle: {fontSize: 16, fontWeight: '700', marginBottom: 8},
-  emptyBody: {fontSize: 14, color: '#666', lineHeight: 20},
+  spinner: {marginTop: 24},
+  error: {color: '#c62828', marginTop: 12},
+  list: {flex: 1, marginTop: 16},
+  empty: {color: '#666', marginTop: 24, textAlign: 'center'},
 });
