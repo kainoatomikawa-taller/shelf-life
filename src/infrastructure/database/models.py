@@ -32,6 +32,12 @@ _storage_location = Enum(
     name="storage_location",
 )
 
+_shelf_life_model_type = Enum(
+    "spoilage",
+    "potency",
+    name="shelf_life_model_type",
+)
+
 
 class PantryItemModel(Base):
     """Persistence representation of a pantry item."""
@@ -81,6 +87,14 @@ class IngredientModel(Base):
         ARRAY(String),
         nullable=False,
         server_default=text("ARRAY[]::text[]"),
+    )
+
+    # Distinguishes safety-based expiry (spoilage) from quality-loss (potency).
+    # All spices use potency; everything else defaults to spoilage.
+    shelf_life_model: Mapped[str] = mapped_column(
+        _shelf_life_model_type,
+        nullable=False,
+        server_default="spoilage",
     )
 
     __table_args__ = (

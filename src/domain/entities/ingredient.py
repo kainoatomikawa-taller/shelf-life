@@ -10,6 +10,7 @@ from __future__ import annotations
 from src.domain.exceptions import ValidationError
 from src.domain.value_objects.ingredient_category import IngredientCategory
 from src.domain.value_objects.shelf_life_by_storage import ShelfLifeByStorage
+from src.domain.value_objects.shelf_life_model import ShelfLifeModel
 from src.domain.value_objects.storage_location import StorageLocation
 
 
@@ -26,6 +27,7 @@ class Ingredient:
         typical_shelf_life: ShelfLifeByStorage,
         allergen_tags: list[str],
         diet_tags: list[str],
+        shelf_life_model: ShelfLifeModel = ShelfLifeModel.SPOILAGE,
     ) -> None:
         if not id:
             raise ValidationError("Ingredient id is required.")
@@ -40,6 +42,7 @@ class Ingredient:
         self._typical_shelf_life = typical_shelf_life
         self._allergen_tags = list(allergen_tags)
         self._diet_tags = list(diet_tags)
+        self._shelf_life_model = shelf_life_model
 
     # --- Identity & read-only accessors ----------------------------------------
 
@@ -74,6 +77,10 @@ class Ingredient:
     @property
     def diet_tags(self) -> list[str]:
         return list(self._diet_tags)
+
+    @property
+    def shelf_life_model(self) -> ShelfLifeModel:
+        return self._shelf_life_model
 
     # --- Behaviour -------------------------------------------------------------
 

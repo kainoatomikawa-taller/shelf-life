@@ -1,4 +1,4 @@
-.PHONY: install dev test lint format typecheck up down db-migrate db-rollback db-revision
+.PHONY: install dev test lint format typecheck up down db-migrate db-rollback db-revision db-seed
 
 install:
 	pip install -r requirements-dev.txt
@@ -32,3 +32,6 @@ db-rollback:
 
 db-revision:
 	alembic revision --autogenerate -m "$(msg)"
+
+db-seed:
+	python -m src.infrastructure.database.seeds.seed_ingredients
