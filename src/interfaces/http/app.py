@@ -1,0 +1,47 @@
+"""FastAPI application factory and entry point.
+
+Wires the HTTP delivery mechanism together. Run with:
+
+    uvicorn src.interfaces.http.app:app --reload
+"""
+
+from __future__ import annotations
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+from src.interfaces.http.controllers.pantry_controller import (
+    router as pantry_router,
+)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Startup: create tables in development. Use Alembic migrations in prod.
+    from src.infrastructure.config import settings
+    from src.infrastructure.database.engine import init_db
+
+    if settings.app_env == "development":
+        await init_db()
+    yield
+    # Shutdown hooks (close pools, etc.) would go here.
+
+
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="Shelf Life API",
+        description="Track your pantry and never let food expire again.",
+        version="0.1.0",
+        lifespan=lifespan,
+    )
+
+    @app.get("/health", tags=["system"])
+    async def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    app.include_router(pantry_router)
+    return app
+
+
+app = create_app()

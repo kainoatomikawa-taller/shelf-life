@@ -1,0 +1,20 @@
+# React Native / Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Metro
+.metro-health-check*
+metro.config.js.bak
+
+# builds
+android/app/build/
+ios/build/
+ios/Pods/
+*.ipa
+*.apk
+
+# misc
+.DS_Store
+*.log
+.env
