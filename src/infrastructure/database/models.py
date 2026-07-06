@@ -6,12 +6,14 @@ domain or application.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    Boolean,
     CheckConstraint,
     Date,
+    DateTime,
     Enum,
     Float,
     ForeignKey,
@@ -85,6 +87,28 @@ _budget_sensitivity = Enum(
     "medium",
     "high",
     name="budget_sensitivity",
+)
+
+_quantity_state = Enum(
+    "in",
+    "low",
+    "out",
+    name="quantity_state",
+)
+
+_freshness_date_type = Enum(
+    "package",
+    "est-from-purchase",
+    "est-unknown",
+    name="freshness_date_type",
+)
+
+_freshness_display_status = Enum(
+    "fresh",
+    "use_soon",
+    "use_now",
+    "past_estimate_check_it",
+    name="freshness_display_status",
 )
 
 
@@ -298,3 +322,50 @@ class UserModel(Base):
             name="ck_users_typical_time_available_positive",
         ),
     )
+
+
+class InventoryItemModel(Base):
+    """Persistence representation of a user's inventory item (§8 schema).
+
+    quantity_state is a coarse in/low/out signal rather than a precise
+    amount. computed_freshness_date, freshness_date_type and freshness_status
+    are derived by the freshness engine (FreshnessCalculator +
+    FreshnessStatusResolver) and stored rather than recomputed on read.
+    """
+
+    __tablename__ = "inventory_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    ingredient_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+
+    quantity_state: Mapped[str] = mapped_column(_quantity_state, nullable=False)
+    storage_location: Mapped[str] = mapped_column(_storage_location, nullable=False)
+
+    purchase_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    printed_package_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    is_frozen: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default="false"
+    )
+
+    # --- Derived — populated by the freshness engine, not set directly. ----
+    computed_freshness_date: Mapped[date] = mapped_column(Date, nullable=False)
+    freshness_date_type: Mapped[str] = mapped_column(
+        _freshness_date_type, nullable=False
+    )
+    freshness_status: Mapped[str] = mapped_column(
+        _freshness_display_status, nullable=False
+    )
+
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)

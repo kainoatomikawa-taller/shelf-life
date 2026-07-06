@@ -44,3 +44,11 @@ class UserNotFoundError(DomainError):
     def __init__(self, user_id: str) -> None:
         super().__init__(f"User with id '{user_id}' was not found.")
         self.user_id = user_id
+
+
+class InventoryItemNotFoundError(DomainError):
+    """Raised when an inventory item cannot be located by the repository."""
+
+    def __init__(self, item_id: str) -> None:
+        super().__init__(f"Inventory item with id '{item_id}' was not found.")
+        self.item_id = item_id
