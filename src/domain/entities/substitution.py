@@ -90,6 +90,15 @@ class Substitution:
         """
         return self._confidence >= threshold
 
+    def is_valid_for_context(self, context: SubstitutionContext) -> bool:
+        """True when this substitution applies in the given cooking context.
+
+        A GENERAL substitution applies everywhere; a BAKING or SAVORY
+        substitution only applies in that matching context (§5.5) — a swap
+        that works in a stir-fry may ruin a cake.
+        """
+        return self._context is SubstitutionContext.GENERAL or self._context is context
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Substitution):
             return NotImplemented
