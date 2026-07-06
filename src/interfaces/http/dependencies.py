@@ -19,10 +19,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.use_cases.add_inventory_item import AddInventoryItemUseCase
 from src.application.use_cases.add_pantry_item import AddPantryItemUseCase
+from src.application.use_cases.add_shopping_list_items import (
+    AddShoppingListItemsUseCase,
+)
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
+from src.application.use_cases.generate_shopping_list_for_recipe import (
+    GenerateShoppingListForRecipeUseCase,
+)
 from src.application.use_cases.get_cook_now_feed import GetCookNowFeedUseCase
+from src.application.use_cases.get_discover_feed import GetDiscoverFeedUseCase
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
@@ -48,6 +55,9 @@ from src.infrastructure.repositories.postgres_pantry_item_repository import (
 )
 from src.infrastructure.repositories.postgres_recipe_repository import (
     PostgresRecipeRepository,
+)
+from src.infrastructure.repositories.postgres_shopping_list_item_repository import (
+    PostgresShoppingListItemRepository,
 )
 from src.infrastructure.repositories.postgres_substitution_repository import (
     PostgresSubstitutionRepository,
@@ -253,4 +263,81 @@ def get_cook_now_feed_use_case(
 
 GetCookNowFeedUseCaseDep = Annotated[
     GetCookNowFeedUseCase, Depends(get_cook_now_feed_use_case)
+]
+
+
+def get_shopping_list_item_repository(
+    session: SessionDep,
+) -> PostgresShoppingListItemRepository:
+    return PostgresShoppingListItemRepository(session)
+
+
+ShoppingListItemRepositoryDep = Annotated[
+    PostgresShoppingListItemRepository, Depends(get_shopping_list_item_repository)
+]
+
+
+def get_discover_feed_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    substitution_repository: SubstitutionRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> GetDiscoverFeedUseCase:
+    return GetDiscoverFeedUseCase(
+        recipe_repository=recipe_repository,
+        substitution_repository=substitution_repository,
+        ingredient_repository=ingredient_repository,
+        inventory_item_repository=inventory_item_repository,
+        user_repository=user_repository,
+    )
+
+
+GetDiscoverFeedUseCaseDep = Annotated[
+    GetDiscoverFeedUseCase, Depends(get_discover_feed_use_case)
+]
+
+
+def get_generate_shopping_list_for_recipe_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    substitution_repository: SubstitutionRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> GenerateShoppingListForRecipeUseCase:
+    return GenerateShoppingListForRecipeUseCase(
+        recipe_repository=recipe_repository,
+        substitution_repository=substitution_repository,
+        ingredient_repository=ingredient_repository,
+        inventory_item_repository=inventory_item_repository,
+        user_repository=user_repository,
+    )
+
+
+GenerateShoppingListForRecipeUseCaseDep = Annotated[
+    GenerateShoppingListForRecipeUseCase,
+    Depends(get_generate_shopping_list_for_recipe_use_case),
+]
+
+
+def get_add_shopping_list_items_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    substitution_repository: SubstitutionRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    user_repository: UserRepositoryDep,
+    shopping_list_item_repository: ShoppingListItemRepositoryDep,
+) -> AddShoppingListItemsUseCase:
+    return AddShoppingListItemsUseCase(
+        recipe_repository=recipe_repository,
+        substitution_repository=substitution_repository,
+        ingredient_repository=ingredient_repository,
+        inventory_item_repository=inventory_item_repository,
+        user_repository=user_repository,
+        shopping_list_item_repository=shopping_list_item_repository,
+    )
+
+
+AddShoppingListItemsUseCaseDep = Annotated[
+    AddShoppingListItemsUseCase, Depends(get_add_shopping_list_items_use_case)
 ]

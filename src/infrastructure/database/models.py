@@ -484,3 +484,34 @@ class RecipeIngredientModel(Base):
             "recipe_id", "ingredient_id", name="uq_recipe_ingredients_pair"
         ),
     )
+
+
+class ShoppingListItemModel(Base):
+    """Persistence representation of a user's shopping list item (§8 schema).
+
+    Populated by AddShoppingListItemsUseCase's one-tap add (§5.4) — one row
+    per true-gap ingredient the user committed to buy. recipe_id is
+    provenance only; it doesn't gate anything at read time.
+    """
+
+    __tablename__ = "shopping_list_items"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    ingredient_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    recipe_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("recipes.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

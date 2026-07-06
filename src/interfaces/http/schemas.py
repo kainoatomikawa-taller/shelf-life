@@ -155,6 +155,26 @@ class RecipeCardResponse(BaseModel):
     substitutions: list[SubstitutionSuggestionResponse]
 
 
+class DiscoverRecipeCardResponse(BaseModel):
+    id: str
+    name: str
+    time_minutes: int
+    difficulty: str
+    cuisine_tags: list[str]
+    have_count: int
+    total_count: int
+
+
+class ShoppingListItemResponse(BaseModel):
+    ingredient_id: str
+    ingredient_name: str
+
+
+class ShoppingListResponse(BaseModel):
+    recipe_id: str
+    items: list[ShoppingListItemResponse]
+
+
 class UserProfileResponse(BaseModel):
     id: str
     allergies: list[str]
