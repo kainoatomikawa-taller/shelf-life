@@ -52,3 +52,11 @@ class InventoryItemNotFoundError(DomainError):
     def __init__(self, item_id: str) -> None:
         super().__init__(f"Inventory item with id '{item_id}' was not found.")
         self.item_id = item_id
+
+
+class RecipeNotFoundError(DomainError):
+    """Raised when a recipe cannot be located by the repository."""
+
+    def __init__(self, recipe_id: str) -> None:
+        super().__init__(f"Recipe with id '{recipe_id}' was not found.")
+        self.recipe_id = recipe_id

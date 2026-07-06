@@ -111,6 +111,12 @@ _freshness_display_status = Enum(
     name="freshness_display_status",
 )
 
+_ingredient_role = Enum(
+    "essential",
+    "optional",
+    name="ingredient_role",
+)
+
 
 class PantryItemModel(Base):
     """Persistence representation of a pantry item."""
@@ -369,3 +375,90 @@ class InventoryItemModel(Base):
 
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class RecipeModel(Base):
+    """Persistence representation of a catalog recipe (§8 schema).
+
+    allergen_tags/diet_tags are intentionally absent — they're derived from
+    the recipe's ingredients (via RecipeIngredientModel) at read time rather
+    than stored, so they can never drift out of sync with the catalog.
+    """
+
+    __tablename__ = "recipes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+
+    cuisine_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    flavor_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    technique_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    equipment_needed: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+
+    steps: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+
+    time_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    difficulty: Mapped[str] = mapped_column(_skill_level, nullable=False)
+    popularity_score: Mapped[float] = mapped_column(
+        Float, nullable=False, server_default="0"
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "time_minutes > 0", name="ck_recipes_time_minutes_positive"
+        ),
+        CheckConstraint(
+            "popularity_score >= 0", name="ck_recipes_popularity_score_non_negative"
+        ),
+    )
+
+
+class RecipeIngredientModel(Base):
+    """Persistence representation of a recipe's ingredient list (§8 schema).
+
+    One row per (recipe, ingredient) pair, tagged essential or optional —
+    the flag AC1 requires and the input to allergen/diet tag derivation.
+    """
+
+    __tablename__ = "recipe_ingredients"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    recipe_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("recipes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    ingredient_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    role: Mapped[str] = mapped_column(_ingredient_role, nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "recipe_id", "ingredient_id", name="uq_recipe_ingredients_pair"
+        ),
+    )
