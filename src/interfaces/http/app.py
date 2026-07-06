@@ -26,6 +26,9 @@ from src.interfaces.http.controllers.inventory_controller import (
 from src.interfaces.http.controllers.pantry_controller import (
     router as pantry_router,
 )
+from src.interfaces.http.controllers.rating_controller import (
+    router as rating_router,
+)
 from src.interfaces.http.controllers.shopping_list_controller import (
     router as shopping_list_router,
 )
@@ -65,6 +68,7 @@ def create_app() -> FastAPI:
     app.include_router(cook_now_router)
     app.include_router(discover_router)
     app.include_router(shopping_list_router)
+    app.include_router(rating_router)
     return app
 
 

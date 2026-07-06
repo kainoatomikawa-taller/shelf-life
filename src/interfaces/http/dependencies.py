@@ -31,6 +31,9 @@ from src.application.use_cases.check_shopping_list_item import (
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
+from src.application.use_cases.decrement_recipe_ingredients import (
+    DecrementRecipeIngredientsUseCase,
+)
 from src.application.use_cases.generate_shopping_list_for_recipe import (
     GenerateShoppingListForRecipeUseCase,
 )
@@ -43,6 +46,7 @@ from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
 from src.application.use_cases.remove_inventory_item import RemoveInventoryItemUseCase
 from src.application.use_cases.search_ingredients import SearchIngredientsUseCase
 from src.application.use_cases.submit_onboarding import SubmitOnboardingUseCase
+from src.application.use_cases.submit_rating import SubmitRatingUseCase
 from src.application.use_cases.update_inventory_item_dates import (
     UpdateInventoryItemDatesUseCase,
 )
@@ -59,6 +63,9 @@ from src.infrastructure.repositories.postgres_inventory_item_repository import (
 )
 from src.infrastructure.repositories.postgres_pantry_item_repository import (
     PostgresPantryItemRepository,
+)
+from src.infrastructure.repositories.postgres_rating_repository import (
+    PostgresRatingRepository,
 )
 from src.infrastructure.repositories.postgres_recipe_repository import (
     PostgresRecipeRepository,
@@ -400,4 +407,52 @@ def get_add_purchases_to_kitchen_use_case(
 
 AddPurchasesToKitchenUseCaseDep = Annotated[
     AddPurchasesToKitchenUseCase, Depends(get_add_purchases_to_kitchen_use_case)
+]
+
+
+def get_rating_repository(session: SessionDep) -> PostgresRatingRepository:
+    return PostgresRatingRepository(session)
+
+
+RatingRepositoryDep = Annotated[
+    PostgresRatingRepository, Depends(get_rating_repository)
+]
+
+
+def get_submit_rating_use_case(
+    rating_repository: RatingRepositoryDep,
+    user_repository: UserRepositoryDep,
+    recipe_repository: RecipeRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+) -> SubmitRatingUseCase:
+    return SubmitRatingUseCase(
+        rating_repository=rating_repository,
+        user_repository=user_repository,
+        recipe_repository=recipe_repository,
+        inventory_item_repository=inventory_item_repository,
+    )
+
+
+SubmitRatingUseCaseDep = Annotated[
+    SubmitRatingUseCase, Depends(get_submit_rating_use_case)
+]
+
+
+def get_decrement_recipe_ingredients_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    inventory_item_repository: InventoryItemRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> DecrementRecipeIngredientsUseCase:
+    return DecrementRecipeIngredientsUseCase(
+        recipe_repository=recipe_repository,
+        inventory_item_repository=inventory_item_repository,
+        ingredient_repository=ingredient_repository,
+        user_repository=user_repository,
+    )
+
+
+DecrementRecipeIngredientsUseCaseDep = Annotated[
+    DecrementRecipeIngredientsUseCase,
+    Depends(get_decrement_recipe_ingredients_use_case),
 ]

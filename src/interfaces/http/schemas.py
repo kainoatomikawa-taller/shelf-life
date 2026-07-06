@@ -198,6 +198,34 @@ class AddPurchasesToKitchenRequest(BaseModel):
     purchase_date: date | None = None
 
 
+class SubmitRatingRequest(BaseModel):
+    """Body for the post-cook rating prompt (§5.6 AC1). quick_tags is
+    optional — stars/thumbs is the only required signal."""
+
+    user_id: str = Field(..., min_length=1)
+    recipe_id: str = Field(..., min_length=1)
+    stars: int = Field(..., ge=1, le=5)
+    quick_tags: list[str] = Field(default_factory=list)
+
+
+class RatingResponse(BaseModel):
+    id: str
+    user_id: str
+    recipe_id: str
+    stars: int
+    quick_tags: list[str]
+    made_it_at: datetime
+    decrementable_ingredient_ids: list[str]
+
+
+class DecrementRecipeIngredientsRequest(BaseModel):
+    """Body for opting in to the pantry stock decrement the rating prompt
+    offered (§5.6 AC2/AC3) — never triggered automatically."""
+
+    user_id: str = Field(..., min_length=1)
+    recipe_id: str = Field(..., min_length=1)
+
+
 class UserProfileResponse(BaseModel):
     id: str
     allergies: list[str]

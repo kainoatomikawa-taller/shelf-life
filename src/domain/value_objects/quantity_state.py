@@ -15,3 +15,14 @@ class QuantityState(str, Enum):
     IN = "in"
     LOW = "low"
     OUT = "out"
+
+    def step_down(self) -> QuantityState:
+        """One step down the in -> low -> out ladder; out is a floor.
+
+        Powers the post-cook rating prompt's optional stock decrement
+        (§5.6 AC3): using up some of an ingredient nudges it toward out
+        without skipping straight there.
+        """
+        if self is QuantityState.IN:
+            return QuantityState.LOW
+        return QuantityState.OUT
