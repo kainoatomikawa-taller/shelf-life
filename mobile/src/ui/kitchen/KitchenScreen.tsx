@@ -13,18 +13,22 @@ import {
   Text,
   View,
 } from 'react-native';
+import type {InventoryItem} from '../../domain/InventoryItem';
 import {SingleSelectChips} from '../add-item/components/SingleSelectChips';
 import {InventoryItemRow} from './InventoryItemRow';
 import {
   groupLongLived,
   groupPerishables,
+  selectUseItUpSoon,
   splitPerishablesFromLongLived,
   type GroupBy,
 } from './groupInventoryItems';
 import {useInventoryItems} from './useInventoryItems';
+import {UseItUpSoonStrip} from './UseItUpSoonStrip';
 
 interface Props {
   userId: string;
+  onCookNow: (item: InventoryItem) => void;
 }
 
 type ViewMode = 'kitchen' | 'pantrySpices';
@@ -40,7 +44,7 @@ function groupByLabel(groupBy: GroupBy): string {
   return groupBy === 'location' ? 'By location' : 'By urgency';
 }
 
-export function KitchenScreen({userId}: Props): React.JSX.Element {
+export function KitchenScreen({userId, onCookNow}: Props): React.JSX.Element {
   const {items, loading, error, setQuantityState, editDates, remove} =
     useInventoryItems(userId);
   const [viewMode, setViewMode] = useState<ViewMode>('kitchen');
@@ -51,10 +55,13 @@ export function KitchenScreen({userId}: Props): React.JSX.Element {
     viewMode === 'kitchen'
       ? groupPerishables(perishables, groupBy)
       : groupLongLived(longLived);
+  const useItUpSoon = selectUseItUpSoon(items);
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Kitchen</Text>
+
+      <UseItUpSoonStrip items={useItUpSoon} onCookNow={onCookNow} />
 
       <SingleSelectChips
         options={VIEW_MODES}

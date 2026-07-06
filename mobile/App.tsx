@@ -6,6 +6,7 @@
 import React, {useState} from 'react';
 import {SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
+import {CookNowScreen} from './src/ui/cook-now/CookNowScreen';
 import {KitchenScreen} from './src/ui/kitchen/KitchenScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
@@ -17,13 +18,31 @@ type Tab = 'kitchen' | 'add' | 'profile';
 function App(): React.JSX.Element {
   const [onboarded, setOnboarded] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('kitchen');
+  const [cookNowIngredient, setCookNowIngredient] = useState<string | null>(null);
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" />
-      {onboarded ? (
+      {!onboarded && (
+        <OnboardingScreen
+          userId={DEMO_USER_ID}
+          onComplete={() => setOnboarded(true)}
+        />
+      )}
+      {onboarded && cookNowIngredient && (
+        <CookNowScreen
+          filterIngredientName={cookNowIngredient}
+          onBack={() => setCookNowIngredient(null)}
+        />
+      )}
+      {onboarded && !cookNowIngredient && (
         <>
-          {activeTab === 'kitchen' && <KitchenScreen userId={DEMO_USER_ID} />}
+          {activeTab === 'kitchen' && (
+            <KitchenScreen
+              userId={DEMO_USER_ID}
+              onCookNow={item => setCookNowIngredient(item.ingredientName)}
+            />
+          )}
           {activeTab === 'add' && <AddItemScreen userId={DEMO_USER_ID} />}
           {activeTab === 'profile' && <ProfileScreen userId={DEMO_USER_ID} />}
           <View style={styles.tabBar}>
@@ -56,11 +75,6 @@ function App(): React.JSX.Element {
             </TouchableOpacity>
           </View>
         </>
-      ) : (
-        <OnboardingScreen
-          userId={DEMO_USER_ID}
-          onComplete={() => setOnboarded(true)}
-        />
       )}
     </SafeAreaView>
   );

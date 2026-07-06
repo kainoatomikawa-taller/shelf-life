@@ -67,3 +67,21 @@ export function groupLongLived(items: readonly InventoryItem[]): Section[] {
     }))
     .filter(section => section.data.length > 0);
 }
+
+/** Items urgent enough for the "Use it up soon" strip — Use soon / Use now
+ * only, most urgent first. Past-estimate items are excluded: those need a
+ * spoilage check, not a recipe suggestion. */
+export function selectUseItUpSoon(
+  items: readonly InventoryItem[],
+): InventoryItem[] {
+  return items
+    .filter(
+      item =>
+        item.freshnessStatus === 'use_now' || item.freshnessStatus === 'use_soon',
+    )
+    .sort(
+      (a, b) =>
+        URGENCY_ORDER.indexOf(a.freshnessStatus) -
+        URGENCY_ORDER.indexOf(b.freshnessStatus),
+    );
+}
