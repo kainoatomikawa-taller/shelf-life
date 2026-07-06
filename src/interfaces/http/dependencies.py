@@ -22,10 +22,14 @@ from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
+from src.application.use_cases.submit_onboarding import SubmitOnboardingUseCase
 from src.domain.services.expiration_service import ExpirationService
 from src.infrastructure.database.engine import get_session
 from src.infrastructure.repositories.postgres_pantry_item_repository import (
     PostgresPantryItemRepository,
+)
+from src.infrastructure.repositories.postgres_user_repository import (
+    PostgresUserRepository,
 )
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -38,6 +42,13 @@ def get_repository(session: SessionDep) -> PostgresPantryItemRepository:
 RepositoryDep = Annotated[
     PostgresPantryItemRepository, Depends(get_repository)
 ]
+
+
+def get_user_repository(session: SessionDep) -> PostgresUserRepository:
+    return PostgresUserRepository(session)
+
+
+UserRepositoryDep = Annotated[PostgresUserRepository, Depends(get_user_repository)]
 
 
 def get_add_use_case(repository: RepositoryDep) -> AddPantryItemUseCase:
@@ -58,4 +69,15 @@ AddUseCaseDep = Annotated[AddPantryItemUseCase, Depends(get_add_use_case)]
 ListUseCaseDep = Annotated[ListPantryItemsUseCase, Depends(get_list_use_case)]
 ConsumeUseCaseDep = Annotated[
     ConsumePantryItemUseCase, Depends(get_consume_use_case)
+]
+
+
+def get_submit_onboarding_use_case(
+    repository: UserRepositoryDep,
+) -> SubmitOnboardingUseCase:
+    return SubmitOnboardingUseCase(repository)
+
+
+SubmitOnboardingUseCaseDep = Annotated[
+    SubmitOnboardingUseCase, Depends(get_submit_onboarding_use_case)
 ]

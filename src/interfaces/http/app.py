@@ -14,6 +14,9 @@ from fastapi import FastAPI
 from src.interfaces.http.controllers.pantry_controller import (
     router as pantry_router,
 )
+from src.interfaces.http.controllers.user_controller import (
+    router as user_router,
+)
 
 
 @asynccontextmanager
@@ -41,6 +44,7 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(pantry_router)
+    app.include_router(user_router)
     return app
 
 
