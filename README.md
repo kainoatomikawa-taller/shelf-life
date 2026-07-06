@@ -95,6 +95,8 @@ Because use cases depend only on interfaces, they can be tested against the
 - Python 3.11+
 - Node.js 18+ (for the mobile client)
 - Docker & Docker Compose (optional, for Postgres + Redis)
+- macOS + Xcode + CocoaPods (to run the mobile client on the iOS Simulator —
+  `brew install cocoapods` if you don't have it)
 
 ### 1. Backend
 
@@ -136,12 +138,25 @@ make typecheck   # mypy (strict)
 
 ### 3. Mobile client
 
+The mobile client is React Native. Only the iOS native project (`mobile/ios/`)
+is set up in this repo today — there's no `mobile/android/` yet.
+
 ```bash
 cd mobile
 npm install
-npm start        # start the Metro bundler
-npm run ios      # or: npm run android
+
+# First run only (and again whenever native deps change):
+cd ios && pod install && cd ..
+
+npm run ios      # builds and launches on the iOS Simulator via Xcode's toolchain
 ```
+
+`npm run ios` starts the Metro bundler automatically if it isn't already
+running; run `npm start` yourself first if you want it in its own terminal.
+
+You can also skip the CLI and work directly in Xcode: open
+`mobile/ios/ShelfLife.xcworkspace` (**not** the `.xcodeproj`) and hit Run,
+picking whichever simulator you want from the scheme dropdown.
 
 Lint / type-check the mobile app:
 
@@ -151,7 +166,8 @@ npm run typecheck
 ```
 
 > Point the app at your API by setting `SHELF_LIFE_API_URL`
-> (defaults to `http://localhost:8000`).
+> (defaults to `http://localhost:8000`). The iOS Simulator shares your Mac's
+> network, so the default just works once the backend is running (Step 1).
 
 ---
 
