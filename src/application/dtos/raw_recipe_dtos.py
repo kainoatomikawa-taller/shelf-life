@@ -24,6 +24,14 @@ class ImportRawRecipeInput:
 
 
 @dataclass(frozen=True)
+class TaggedIngredientOutput:
+    raw_text: str
+    ingredient_id: str | None
+    role: str
+    matched: bool
+
+
+@dataclass(frozen=True)
 class RawRecipeOutput:
     id: str
     source: str
@@ -33,7 +41,12 @@ class RawRecipeOutput:
     raw_ingredients: list[str]
     raw_method: list[str]
     stage: str
-    tags: list[str] = field(default_factory=list)
+    cuisine_tags: list[str] = field(default_factory=list)
+    flavor_tags: list[str] = field(default_factory=list)
+    technique_tags: list[str] = field(default_factory=list)
+    difficulty: str | None = None
+    time_minutes: int | None = None
+    tagged_ingredients: list[TaggedIngredientOutput] = field(default_factory=list)
     raw_attribution: str | None = None
     review_notes: str | None = None
     rejected_reason: str | None = None
@@ -41,9 +54,21 @@ class RawRecipeOutput:
 
 
 @dataclass(frozen=True)
+class TaggedIngredientInput:
+    raw_text: str
+    ingredient_id: str | None
+    role: str
+
+
+@dataclass(frozen=True)
 class TagRawRecipeInput:
     raw_recipe_id: str
-    tags: list[str]
+    tagged_ingredients: list[TaggedIngredientInput]
+    difficulty: str
+    time_minutes: int
+    cuisine_tags: list[str] = field(default_factory=list)
+    flavor_tags: list[str] = field(default_factory=list)
+    technique_tags: list[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -57,6 +82,18 @@ class ReviewRawRecipeInput:
 class PublishRecipeIngredientInput:
     ingredient_id: str
     role: str
+
+
+@dataclass(frozen=True)
+class TaggingFailureOutput:
+    raw_recipe_id: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class TagStagedRecipesWithLlmOutput:
+    tagged: list[RawRecipeOutput] = field(default_factory=list)
+    failed: list[TaggingFailureOutput] = field(default_factory=list)
 
 
 @dataclass(frozen=True)

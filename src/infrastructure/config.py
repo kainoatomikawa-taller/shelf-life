@@ -14,6 +14,8 @@ class Settings:
     database_url: str
     redis_url: str
     app_env: str
+    recipe_tagging_model: str
+    recipe_tagging_batch_poll_seconds: float
 
     @staticmethod
     def from_env() -> "Settings":
@@ -24,6 +26,14 @@ class Settings:
             ),
             redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
             app_env=os.getenv("APP_ENV", "development"),
+            # ANTHROPIC_API_KEY is read by the Anthropic SDK itself, not here —
+            # only the model choice is our own config surface (the batch job
+            # is a cost-sensitive, non-latency-sensitive run, so ops may want
+            # to point it at a cheaper model without a code change).
+            recipe_tagging_model=os.getenv("RECIPE_TAGGING_MODEL", "claude-opus-4-8"),
+            recipe_tagging_batch_poll_seconds=float(
+                os.getenv("RECIPE_TAGGING_BATCH_POLL_SECONDS", "30")
+            ),
         )
 
 

@@ -8,7 +8,10 @@ from src.application.dtos.raw_recipe_dtos import ReviewRawRecipeInput
 from src.application.use_cases.review_raw_recipe import ReviewRawRecipeUseCase
 from src.domain.entities.raw_recipe import RawRecipe
 from src.domain.exceptions import RawRecipeNotFoundError, ValidationError
+from src.domain.value_objects.ingredient_role import IngredientRole
 from src.domain.value_objects.pipeline_stage import PipelineStage
+from src.domain.value_objects.skill_level import SkillLevel
+from src.domain.value_objects.tagged_ingredient import TaggedIngredient
 from tests.fakes.in_memory_raw_recipe_repository import InMemoryRawRecipeRepository
 
 RAW_RECIPE_ID = "raw-1"
@@ -25,7 +28,18 @@ def _tagged_raw_recipe() -> RawRecipe:
         raw_method=["Mix.", "Cook."],
         imported_at=datetime(2026, 7, 6, tzinfo=UTC),
     )
-    raw_recipe.tag(["breakfast"])
+    raw_recipe.tag(
+        tagged_ingredients=[
+            TaggedIngredient(
+                raw_text="2 cups flour",
+                ingredient_id="ingredient-flour",
+                role=IngredientRole.ESSENTIAL,
+            )
+        ],
+        difficulty=SkillLevel.BEGINNER,
+        time_minutes=20,
+        cuisine_tags=["breakfast"],
+    )
     return raw_recipe
 
 

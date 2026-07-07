@@ -608,11 +608,28 @@ class RawRecipeModel(Base):
     stage: Mapped[str] = mapped_column(
         _pipeline_stage, nullable=False, server_default="imported", index=True
     )
-    tags: Mapped[list[str]] = mapped_column(
+
+    # --- Tagging output (populated by TagRawRecipeUseCase /
+    # TagStagedRecipesWithLlmUseCase) — null until the recipe reaches the
+    # tagged stage. ---
+    cuisine_tags: Mapped[list[str]] = mapped_column(
         ARRAY(String),
         nullable=False,
         server_default=text("ARRAY[]::text[]"),
     )
+    flavor_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    technique_tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    difficulty: Mapped[str | None] = mapped_column(_skill_level, nullable=True)
+    time_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
     review_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     rejected_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     published_recipe_id: Mapped[str | None] = mapped_column(
@@ -626,3 +643,35 @@ class RawRecipeModel(Base):
             "source", "source_recipe_id", name="uq_raw_recipes_source_pair"
         ),
     )
+
+
+class RawRecipeIngredientModel(Base):
+    """Persistence representation of one tagged ingredient line on a staged
+    raw recipe (recipe ingestion pipeline).
+
+    One row per raw ingredient line, mirroring RecipeIngredientModel's
+    (recipe, ingredient, role) shape but with two differences that reflect
+    staging data's untrusted, not-yet-fully-resolved nature: raw_text
+    preserves the original freeform source line for a human reviewer to
+    compare against, and ingredient_id is nullable — a raw recipe can reach
+    the tagged stage with some ingredients still unmatched to the catalog,
+    to be resolved during human review rather than blocking the batch.
+    """
+
+    __tablename__ = "raw_recipe_ingredients"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    raw_recipe_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("raw_recipes.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    ingredient_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("ingredients.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    role: Mapped[str] = mapped_column(_ingredient_role, nullable=False)

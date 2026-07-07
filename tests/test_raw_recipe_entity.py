@@ -7,7 +7,10 @@ import pytest
 
 from src.domain.entities.raw_recipe import RawRecipe
 from src.domain.exceptions import InvalidPipelineTransitionError, ValidationError
+from src.domain.value_objects.ingredient_role import IngredientRole
 from src.domain.value_objects.pipeline_stage import PipelineStage
+from src.domain.value_objects.skill_level import SkillLevel
+from src.domain.value_objects.tagged_ingredient import TaggedIngredient
 
 IMPORTED_AT = datetime(2026, 7, 6, tzinfo=UTC)
 
@@ -25,6 +28,27 @@ def _raw_recipe(**overrides: object) -> RawRecipe:
     )
     defaults.update(overrides)
     return RawRecipe(**defaults)  # type: ignore[arg-type]
+
+
+def _tagged_ingredients() -> list[TaggedIngredient]:
+    return [
+        TaggedIngredient(
+            raw_text="2 cups flour",
+            ingredient_id="ingredient-flour",
+            role=IngredientRole.ESSENTIAL,
+        )
+    ]
+
+
+def _tag(raw_recipe: RawRecipe, **overrides: object) -> None:
+    kwargs: dict = dict(
+        tagged_ingredients=_tagged_ingredients(),
+        difficulty=SkillLevel.BEGINNER,
+        time_minutes=20,
+        cuisine_tags=["Breakfast", " Easy "],
+    )
+    kwargs.update(overrides)
+    raw_recipe.tag(**kwargs)  # type: ignore[arg-type]
 
 
 def test_captures_source_provenance_and_license() -> None:
@@ -56,23 +80,53 @@ def test_rejects_empty_raw_ingredients_or_method() -> None:
 
 def test_tag_advances_imported_to_tagged() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["Breakfast", " Easy "])
+    _tag(raw_recipe)
 
     assert raw_recipe.stage == PipelineStage.TAGGED
-    assert raw_recipe.tags == ["breakfast", "easy"]
+    assert raw_recipe.cuisine_tags == ["breakfast", "easy"]
+    assert raw_recipe.difficulty == SkillLevel.BEGINNER
+    assert raw_recipe.time_minutes == 20
+    assert raw_recipe.tagged_ingredients == _tagged_ingredients()
+
+
+def test_tag_requires_at_least_one_tagged_ingredient() -> None:
+    raw_recipe = _raw_recipe()
+    with pytest.raises(ValidationError):
+        _tag(raw_recipe, tagged_ingredients=[])
+
+
+def test_tag_requires_positive_time_minutes() -> None:
+    raw_recipe = _raw_recipe()
+    with pytest.raises(ValidationError):
+        _tag(raw_recipe, time_minutes=0)
 
 
 def test_tag_from_a_non_imported_stage_raises() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
 
     with pytest.raises(InvalidPipelineTransitionError):
-        raw_recipe.tag(["breakfast-again"])
+        _tag(raw_recipe)
+
+
+def test_unmatched_ingredients_flags_ingredients_with_no_catalog_match() -> None:
+    raw_recipe = _raw_recipe()
+    matched = TaggedIngredient(
+        raw_text="2 cups flour",
+        ingredient_id="ingredient-flour",
+        role=IngredientRole.ESSENTIAL,
+    )
+    unmatched = TaggedIngredient(
+        raw_text="2 eggs", ingredient_id=None, role=IngredientRole.ESSENTIAL
+    )
+    _tag(raw_recipe, tagged_ingredients=[matched, unmatched])
+
+    assert raw_recipe.unmatched_ingredients() == [unmatched]
 
 
 def test_approve_advances_tagged_to_approved() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
     raw_recipe.approve(review_notes="Looks great.")
 
     assert raw_recipe.stage == PipelineStage.APPROVED
@@ -87,7 +141,7 @@ def test_approve_before_tagging_raises() -> None:
 
 def test_reject_advances_tagged_to_rejected_and_requires_a_reason() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
 
     with pytest.raises(ValidationError):
         raw_recipe.reject("")
@@ -99,7 +153,7 @@ def test_reject_advances_tagged_to_rejected_and_requires_a_reason() -> None:
 
 def test_rejected_raw_recipe_cannot_be_approved_or_published() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
     raw_recipe.reject("Not a fit for the catalog.")
 
     with pytest.raises(InvalidPipelineTransitionError):
@@ -110,7 +164,7 @@ def test_rejected_raw_recipe_cannot_be_approved_or_published() -> None:
 
 def test_publish_advances_approved_to_published() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
     raw_recipe.approve()
     raw_recipe.publish("recipe-1")
 
@@ -120,7 +174,7 @@ def test_publish_advances_approved_to_published() -> None:
 
 def test_publish_before_approval_raises() -> None:
     raw_recipe = _raw_recipe()
-    raw_recipe.tag(["breakfast"])
+    _tag(raw_recipe)
 
     with pytest.raises(InvalidPipelineTransitionError):
         raw_recipe.publish("recipe-1")

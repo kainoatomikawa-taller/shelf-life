@@ -19,6 +19,13 @@ The entity is a small state machine over PipelineStage:
 Each transition method guards against being called out of order, so an
 invalid pipeline move fails loudly in the domain layer rather than silently
 corrupting staging data.
+
+tag() carries the recipe's full production-schema candidate data — cuisine/
+flavor/technique tags, difficulty, time, and a TaggedIngredient per raw
+ingredient line — rather than a flat list of strings. This mirrors what
+Recipe itself requires (see Recipe.__init__): the tagging stage exists to
+produce that shape, whether the tagger is a human curator or a batch LLM
+pass, so review/publish tooling never has to re-derive it.
 """
 
 from __future__ import annotations
@@ -27,6 +34,8 @@ from datetime import datetime
 
 from src.domain.exceptions import InvalidPipelineTransitionError, ValidationError
 from src.domain.value_objects.pipeline_stage import PipelineStage
+from src.domain.value_objects.skill_level import SkillLevel
+from src.domain.value_objects.tagged_ingredient import TaggedIngredient
 
 
 def _normalize_tags(tags: list[str]) -> list[str]:
@@ -52,7 +61,12 @@ class RawRecipe:
         imported_at: datetime,
         raw_attribution: str | None = None,
         stage: PipelineStage = PipelineStage.IMPORTED,
-        tags: list[str] | None = None,
+        cuisine_tags: list[str] | None = None,
+        flavor_tags: list[str] | None = None,
+        technique_tags: list[str] | None = None,
+        difficulty: SkillLevel | None = None,
+        time_minutes: int | None = None,
+        tagged_ingredients: list[TaggedIngredient] | None = None,
         review_notes: str | None = None,
         rejected_reason: str | None = None,
         published_recipe_id: str | None = None,
@@ -73,6 +87,12 @@ class RawRecipe:
             raise ValidationError("RawRecipe must have at least one raw method step.")
         if not isinstance(stage, PipelineStage):
             raise ValidationError("RawRecipe stage must be a valid PipelineStage.")
+        if difficulty is not None and not isinstance(difficulty, SkillLevel):
+            raise ValidationError("RawRecipe difficulty must be a valid SkillLevel.")
+        if time_minutes is not None and time_minutes <= 0:
+            raise ValidationError(
+                f"RawRecipe time_minutes must be positive, got {time_minutes}."
+            )
 
         self._id = id
         self._source = source.strip()
@@ -88,7 +108,12 @@ class RawRecipe:
             else None
         )
         self._stage = stage
-        self._tags = _normalize_tags(tags or [])
+        self._cuisine_tags = _normalize_tags(cuisine_tags or [])
+        self._flavor_tags = _normalize_tags(flavor_tags or [])
+        self._technique_tags = _normalize_tags(technique_tags or [])
+        self._difficulty = difficulty
+        self._time_minutes = time_minutes
+        self._tagged_ingredients = list(tagged_ingredients or [])
         self._review_notes = review_notes.strip() if review_notes else None
         self._rejected_reason = rejected_reason.strip() if rejected_reason else None
         self._published_recipe_id = published_recipe_id
@@ -136,8 +161,28 @@ class RawRecipe:
         return self._stage
 
     @property
-    def tags(self) -> list[str]:
-        return list(self._tags)
+    def cuisine_tags(self) -> list[str]:
+        return list(self._cuisine_tags)
+
+    @property
+    def flavor_tags(self) -> list[str]:
+        return list(self._flavor_tags)
+
+    @property
+    def technique_tags(self) -> list[str]:
+        return list(self._technique_tags)
+
+    @property
+    def difficulty(self) -> SkillLevel | None:
+        return self._difficulty
+
+    @property
+    def time_minutes(self) -> int | None:
+        return self._time_minutes
+
+    @property
+    def tagged_ingredients(self) -> list[TaggedIngredient]:
+        return list(self._tagged_ingredients)
 
     @property
     def review_notes(self) -> str | None:
@@ -153,11 +198,44 @@ class RawRecipe:
 
     # --- Pipeline transitions ------------------------------------------------
 
-    def tag(self, tags: list[str]) -> None:
-        """Attach candidate catalog tags and advance imported -> tagged."""
+    def tag(
+        self,
+        tagged_ingredients: list[TaggedIngredient],
+        difficulty: SkillLevel,
+        time_minutes: int,
+        cuisine_tags: list[str] | None = None,
+        flavor_tags: list[str] | None = None,
+        technique_tags: list[str] | None = None,
+    ) -> None:
+        """Attach the recipe's candidate production-schema data and advance
+        imported -> tagged. An ingredient with ingredient_id=None is a
+        deliberately allowed value here — see TaggedIngredient — but review
+        tooling must surface it via unmatched_ingredients() rather than let
+        it slip through to publish."""
         self._require_stage(PipelineStage.IMPORTED, PipelineStage.TAGGED)
-        self._tags = _normalize_tags(tags)
+        if not tagged_ingredients:
+            raise ValidationError(
+                "RawRecipe must have at least one tagged ingredient."
+            )
+        if not isinstance(difficulty, SkillLevel):
+            raise ValidationError("RawRecipe difficulty must be a valid SkillLevel.")
+        if time_minutes <= 0:
+            raise ValidationError(
+                f"RawRecipe time_minutes must be positive, got {time_minutes}."
+            )
+        self._tagged_ingredients = list(tagged_ingredients)
+        self._difficulty = difficulty
+        self._time_minutes = time_minutes
+        self._cuisine_tags = _normalize_tags(cuisine_tags or [])
+        self._flavor_tags = _normalize_tags(flavor_tags or [])
+        self._technique_tags = _normalize_tags(technique_tags or [])
         self._stage = PipelineStage.TAGGED
+
+    def unmatched_ingredients(self) -> list[TaggedIngredient]:
+        """Tagged ingredients that couldn't be confidently mapped to the
+        catalog — the queue a human reviewer needs to resolve before this
+        raw recipe can be approved."""
+        return [i for i in self._tagged_ingredients if not i.is_matched]
 
     def approve(self, review_notes: str | None = None) -> None:
         """Advance tagged -> approved, clearing the way to publish."""
