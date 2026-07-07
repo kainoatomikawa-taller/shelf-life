@@ -46,6 +46,13 @@ app's own schema builds on top of that id:
   unique constraint gives case-insensitive uniqueness without a separate
   expression index; a check constraint (`username = lower(username)`)
   defends that invariant against writes that bypass the application layer.
+  It also carries a nullable, unique `email` column — a copy of the
+  `auth.users` email, kept purely so the forgot-password edge function can
+  resolve a username to an email server-side (Supabase Auth's own
+  `auth.users` table isn't part of our migrations, so there's no other
+  server-side place to look it up from). Nullable because profiles created
+  before that column existed have none on file; every new profile supplies
+  one.
 - **Every user-owned table** (e.g. `inventory_items`, `ratings`,
   `shopping_list_items`, and any future one) carries a
   `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
