@@ -17,6 +17,7 @@ from typing import Annotated
 import httpx
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.application.ports.cache_port import CachePort
@@ -549,10 +550,37 @@ async def get_current_user_id(
 CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
 
 
+async def get_authenticated_session(
+    session: SessionDep, current_user_id: CurrentUserIdDep
+) -> AsyncSession:
+    """A DB session with the RLS identity claim set to the verified caller.
+
+    Repositories for user-owned tables (profiles, users/taste-profile,
+    inventory_items, ratings, shopping_list_items) must depend on this
+    instead of `SessionDep` — Postgres RLS policies check
+    `auth.uid()`, which reads this session-local setting. `is_local=false`
+    (session-scoped, not transaction-local) is deliberate: some repositories
+    commit mid-request, and a transaction-local setting would be dropped by
+    that commit for any query issued afterward in the same session.
+    """
+    await session.execute(
+        text("SELECT set_config('request.jwt.claim.sub', :sub, false)"),
+        {"sub": current_user_id},
+    )
+    return session
+
+
+AuthenticatedSessionDep = Annotated[
+    AsyncSession, Depends(get_authenticated_session)
+]
+
+
 # --- Profiles -------------------------------------------------------------
 
 
-def get_profile_repository(session: SessionDep) -> PostgresProfileRepository:
+def get_profile_repository(
+    session: AuthenticatedSessionDep,
+) -> PostgresProfileRepository:
     return PostgresProfileRepository(session)
 
 
