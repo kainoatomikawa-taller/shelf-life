@@ -7,31 +7,44 @@ import React, {useState} from 'react';
 import {SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
 import {CookNowScreen} from './src/ui/cook-now/CookNowScreen';
+import {DiscoverScreen} from './src/ui/discover/DiscoverScreen';
 import {KitchenScreen} from './src/ui/kitchen/KitchenScreen';
+import {LoginScreen} from './src/ui/login/LoginScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
+import type {AuthUser} from './src/domain/Auth';
 
-const DEMO_USER_ID = 'demo-user';
-
-type Tab = 'kitchen' | 'cookNow' | 'add' | 'profile';
+type Tab = 'kitchen' | 'cookNow' | 'discover' | 'add' | 'profile';
 
 function App(): React.JSX.Element {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [onboarded, setOnboarded] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('kitchen');
   const [cookNowIngredient, setCookNowIngredient] = useState<string | null>(null);
+
+  if (!authUser) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <StatusBar barStyle="dark-content" />
+        <LoginScreen onLoggedIn={setAuthUser} />
+      </SafeAreaView>
+    );
+  }
+
+  const userId = authUser.id;
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" />
       {!onboarded && (
         <OnboardingScreen
-          userId={DEMO_USER_ID}
+          userId={userId}
           onComplete={() => setOnboarded(true)}
         />
       )}
       {onboarded && cookNowIngredient && (
         <CookNowScreen
-          userId={DEMO_USER_ID}
+          userId={userId}
           filterIngredientName={cookNowIngredient}
           onBack={() => setCookNowIngredient(null)}
         />
@@ -40,18 +53,19 @@ function App(): React.JSX.Element {
         <>
           {activeTab === 'kitchen' && (
             <KitchenScreen
-              userId={DEMO_USER_ID}
+              userId={userId}
               onCookNow={item => setCookNowIngredient(item.ingredientName)}
             />
           )}
           {activeTab === 'cookNow' && (
             <CookNowScreen
-              userId={DEMO_USER_ID}
+              userId={userId}
               onBack={() => setActiveTab('kitchen')}
             />
           )}
-          {activeTab === 'add' && <AddItemScreen userId={DEMO_USER_ID} />}
-          {activeTab === 'profile' && <ProfileScreen userId={DEMO_USER_ID} />}
+          {activeTab === 'discover' && <DiscoverScreen userId={userId} />}
+          {activeTab === 'add' && <AddItemScreen userId={userId} />}
+          {activeTab === 'profile' && <ProfileScreen userId={userId} />}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={styles.tabButton}
@@ -67,6 +81,14 @@ function App(): React.JSX.Element {
               <Text
                 style={[styles.tabLabel, activeTab === 'cookNow' && styles.tabLabelActive]}>
                 Cook Now
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.tabButton}
+              onPress={() => setActiveTab('discover')}>
+              <Text
+                style={[styles.tabLabel, activeTab === 'discover' && styles.tabLabelActive]}>
+                Discover
               </Text>
             </TouchableOpacity>
             <TouchableOpacity

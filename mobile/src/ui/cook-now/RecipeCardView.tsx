@@ -15,15 +15,16 @@ import {
 
 interface Props {
   card: RecipeCard;
+  onPress: (recipeId: string) => void;
 }
 
-export function RecipeCardView({card}: Props): React.JSX.Element {
+export function RecipeCardView({card, onPress}: Props): React.JSX.Element {
   const [swapsRevealed, setSwapsRevealed] = useState(false);
   const {badges} = card;
   const hasSubstitutions = badges.substitutionCount > 0;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity style={styles.card} onPress={() => onPress(card.id)}>
       <Text style={styles.name}>{card.name}</Text>
       <Text style={styles.meta}>
         {card.timeMinutes} min · {difficultyLabel(card.difficulty)}
@@ -71,7 +72,7 @@ export function RecipeCardView({card}: Props): React.JSX.Element {
           ))}
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 }
 

@@ -165,6 +165,22 @@ class DiscoverRecipeCardResponse(BaseModel):
     total_count: int
 
 
+class RecipeIngredientDetailResponse(BaseModel):
+    ingredient_id: str
+    ingredient_name: str
+    role: str
+
+
+class RecipeDetailResponse(BaseModel):
+    id: str
+    name: str
+    time_minutes: int
+    difficulty: str
+    cuisine_tags: list[str]
+    ingredients: list[RecipeIngredientDetailResponse]
+    steps: list[str]
+
+
 class ShoppingListItemResponse(BaseModel):
     ingredient_id: str
     ingredient_name: str

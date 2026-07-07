@@ -39,6 +39,7 @@ from src.application.use_cases.generate_shopping_list_for_recipe import (
 )
 from src.application.use_cases.get_cook_now_feed import GetCookNowFeedUseCase
 from src.application.use_cases.get_discover_feed import GetDiscoverFeedUseCase
+from src.application.use_cases.get_recipe_detail import GetRecipeDetailUseCase
 from src.application.use_cases.get_shopping_list import GetShoppingListUseCase
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
@@ -309,6 +310,21 @@ def get_discover_feed_use_case(
 
 GetDiscoverFeedUseCaseDep = Annotated[
     GetDiscoverFeedUseCase, Depends(get_discover_feed_use_case)
+]
+
+
+def get_recipe_detail_use_case(
+    recipe_repository: RecipeRepositoryDep,
+    ingredient_repository: IngredientRepositoryDep,
+) -> GetRecipeDetailUseCase:
+    return GetRecipeDetailUseCase(
+        recipe_repository=recipe_repository,
+        ingredient_repository=ingredient_repository,
+    )
+
+
+GetRecipeDetailUseCaseDep = Annotated[
+    GetRecipeDetailUseCase, Depends(get_recipe_detail_use_case)
 ]
 
 

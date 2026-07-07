@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import {SingleSelectChips} from '../add-item/components/SingleSelectChips';
+import {RecipeDetailScreen} from '../recipe-detail/RecipeDetailScreen';
 import type {CookNowTab} from '../../domain/RecipeCard';
 import {RecipeCardView} from './RecipeCardView';
 import {useCookNowFeed} from './useCookNowFeed';
@@ -38,7 +39,17 @@ export function CookNowScreen({
   onBack,
 }: Props): React.JSX.Element {
   const [tab, setTab] = useState<CookNowTab>('for_you');
+  const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
   const {cards, loading, error} = useCookNowFeed(userId, tab);
+
+  if (selectedRecipeId) {
+    return (
+      <RecipeDetailScreen
+        recipeId={selectedRecipeId}
+        onBack={() => setSelectedRecipeId(null)}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -71,7 +82,9 @@ export function CookNowScreen({
           style={styles.list}
           data={cards}
           keyExtractor={card => card.id}
-          renderItem={({item}) => <RecipeCardView card={item} />}
+          renderItem={({item}) => (
+            <RecipeCardView card={item} onPress={setSelectedRecipeId} />
+          )}
           ListEmptyComponent={
             <Text style={styles.empty}>
               No recipes you can cook right now — try restocking a few
