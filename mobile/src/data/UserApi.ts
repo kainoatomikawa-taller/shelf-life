@@ -1,7 +1,9 @@
 /**
  * Thin API client for submitting a user's onboarding taste profile.
  * Maps between the client's camelCase domain model and the backend's
- * snake_case contract.
+ * snake_case contract. Bearer-authenticated — the backend derives the
+ * caller's identity from the verified Supabase access token rather than a
+ * client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -41,10 +43,10 @@ export class UserApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
   /** Returns null if the user hasn't completed onboarding yet. */
-  async getProfile(userId: string): Promise<UserProfile | null> {
-    const res = await fetch(
-      `${this.baseUrl}/users/${encodeURIComponent(userId)}/profile`,
-    );
+  async getProfile(accessToken: string): Promise<UserProfile | null> {
+    const res = await fetch(`${this.baseUrl}/users/me/profile`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (res.status === 404) {
       return null;
     }
@@ -55,27 +57,27 @@ export class UserApi {
   }
 
   async submitOnboarding(
-    userId: string,
+    accessToken: string,
     answers: OnboardingAnswers,
   ): Promise<UserProfile> {
-    const res = await fetch(
-      `${this.baseUrl}/users/${encodeURIComponent(userId)}/profile`,
-      {
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          allergies: answers.allergies,
-          diet_type: answers.dietType,
-          liked_cuisines: answers.likedCuisines,
-          flavor_profile: answers.flavorProfile,
-          skill_level: answers.skillLevel,
-          typical_time_available_minutes: answers.typicalTimeAvailableMinutes,
-          equipment: answers.equipment,
-          budget_sensitivity: answers.budgetSensitivity,
-          adventurousness: answers.adventurousness,
-        }),
+    const res = await fetch(`${this.baseUrl}/users/me/profile`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
       },
-    );
+      body: JSON.stringify({
+        allergies: answers.allergies,
+        diet_type: answers.dietType,
+        liked_cuisines: answers.likedCuisines,
+        flavor_profile: answers.flavorProfile,
+        skill_level: answers.skillLevel,
+        typical_time_available_minutes: answers.typicalTimeAvailableMinutes,
+        equipment: answers.equipment,
+        budget_sensitivity: answers.budgetSensitivity,
+        adventurousness: answers.adventurousness,
+      }),
+    });
     if (!res.ok) {
       throw new Error(`Failed to submit onboarding: ${res.status}`);
     }

@@ -75,7 +75,7 @@ def upgrade() -> None:
         sa.Column("time_minutes", sa.Integer(), nullable=False),
         sa.Column(
             "difficulty",
-            sa.Enum(
+            postgresql.ENUM(
                 "beginner",
                 "intermediate",
                 "advanced",
@@ -113,7 +113,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "role",
-            sa.Enum(
+            postgresql.ENUM(
                 "essential", "optional", name="ingredient_role", create_type=False
             ),
             nullable=False,

@@ -47,6 +47,7 @@ async def create_profile(
                 user_id=current_user_id,
                 username=body.username,
                 display_name=body.display_name,
+                email=body.email,
             )
         )
     except (ProfileAlreadyExistsError, UsernameAlreadyTakenError) as exc:

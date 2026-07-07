@@ -74,7 +74,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "diet_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "omnivore",
                 "vegetarian",
                 "vegan",
@@ -127,7 +127,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "skill_level",
-            sa.Enum(
+            postgresql.ENUM(
                 "beginner",
                 "intermediate",
                 "advanced",
@@ -151,7 +151,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "budget_sensitivity",
-            sa.Enum(
+            postgresql.ENUM(
                 "low",
                 "medium",
                 "high",

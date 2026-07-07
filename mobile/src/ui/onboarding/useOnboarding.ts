@@ -5,6 +5,7 @@
 
 import {useCallback, useState} from 'react';
 import {UserApi} from '../../data/UserApi';
+import {getAccessToken} from '../../data/supabaseClient';
 import {
   DEFAULT_ONBOARDING_ANSWERS,
   type OnboardingAnswers,
@@ -14,7 +15,7 @@ export const TOTAL_ONBOARDING_STEPS = 5;
 
 const api = new UserApi();
 
-export function useOnboarding(userId: string, onComplete: () => void) {
+export function useOnboarding(onComplete: () => void) {
   const [answers, setAnswers] = useState<OnboardingAnswers>(
     DEFAULT_ONBOARDING_ANSWERS,
   );
@@ -31,7 +32,11 @@ export function useOnboarding(userId: string, onComplete: () => void) {
       setSubmitting(true);
       setError(null);
       try {
-        await api.submitOnboarding(userId, finalAnswers);
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error('Not signed in');
+        }
+        await api.submitOnboarding(accessToken, finalAnswers);
         onComplete();
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Unknown error');
@@ -39,7 +44,7 @@ export function useOnboarding(userId: string, onComplete: () => void) {
         setSubmitting(false);
       }
     },
-    [userId, onComplete],
+    [onComplete],
   );
 
   const advance = useCallback(

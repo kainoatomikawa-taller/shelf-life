@@ -7,6 +7,11 @@ doesn't have its own identity, it extends the auth identity.
 The username is normalized (stripped and lowercased) in the constructor so
 uniqueness can be enforced case-insensitively by a plain unique constraint —
 the stored value is always already-normalized, never a mix of cases.
+
+`email` is optional at the entity level — profiles created before the
+forgot-password flow needed it have none on file — but is normalized the
+same way as username whenever it is present, so a case-insensitive lookup by
+the forgot-password edge function matches what was written at sign-up.
 """
 
 from __future__ import annotations
@@ -25,6 +30,7 @@ class Profile:
         username: str,
         display_name: str,
         created_at: datetime,
+        email: str | None = None,
     ) -> None:
         if not id:
             raise ValidationError("Profile id is required.")
@@ -35,10 +41,15 @@ class Profile:
         if not display_name.strip():
             raise ValidationError("Display name is required.")
 
+        normalized_email = email.strip().lower() if email else None
+        if email is not None and not normalized_email:
+            raise ValidationError("Email cannot be blank.")
+
         self._id = id
         self._username = normalized_username
         self._display_name = display_name
         self._created_at = created_at
+        self._email = normalized_email
 
     @property
     def id(self) -> str:
@@ -55,6 +66,10 @@ class Profile:
     @property
     def created_at(self) -> datetime:
         return self._created_at
+
+    @property
+    def email(self) -> str | None:
+        return self._email
 
     def update_username(self, username: str) -> None:
         """Replace the username. Unlimited changes, no cooldown — callers

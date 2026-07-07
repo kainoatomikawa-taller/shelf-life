@@ -65,7 +65,7 @@ def upgrade() -> None:
         sa.Column("imported_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
             "stage",
-            sa.Enum(
+            postgresql.ENUM(
                 "imported",
                 "tagged",
                 "approved",

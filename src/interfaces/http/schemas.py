@@ -75,10 +75,10 @@ class AddInventoryItemRequest(BaseModel):
 
     Only ingredient_id is required — quantity_state and storage_location
     fall back to smart defaults when omitted, and the dates are left for
-    the freshness engine to estimate around when skipped.
+    the freshness engine to estimate around when skipped. There is no
+    `user_id` field — the id comes from the verified bearer token.
     """
 
-    user_id: str = Field(..., min_length=1)
     ingredient_id: str = Field(..., min_length=1)
     quantity_state: str | None = None
     storage_location: str | None = None
@@ -208,17 +208,17 @@ class CheckShoppingListItemRequest(BaseModel):
 
 class AddPurchasesToKitchenRequest(BaseModel):
     """Body for the "add these to my Kitchen" trip-complete action (§5.7
-    AC3). purchase_date defaults to today when omitted."""
+    AC3). purchase_date defaults to today when omitted. There is no
+    `user_id` field — the id comes from the verified bearer token."""
 
-    user_id: str = Field(..., min_length=1)
     purchase_date: date | None = None
 
 
 class SubmitRatingRequest(BaseModel):
     """Body for the post-cook rating prompt (§5.6 AC1). quick_tags is
-    optional — stars/thumbs is the only required signal."""
+    optional — stars/thumbs is the only required signal. There is no
+    `user_id` field — the id comes from the verified bearer token."""
 
-    user_id: str = Field(..., min_length=1)
     recipe_id: str = Field(..., min_length=1)
     stars: int = Field(..., ge=1, le=5)
     quick_tags: list[str] = Field(default_factory=list)
@@ -245,9 +245,9 @@ class UserRatingResponse(BaseModel):
 
 class DecrementRecipeIngredientsRequest(BaseModel):
     """Body for opting in to the pantry stock decrement the rating prompt
-    offered (§5.6 AC2/AC3) — never triggered automatically."""
+    offered (§5.6 AC2/AC3) — never triggered automatically. There is no
+    `user_id` field — the id comes from the verified bearer token."""
 
-    user_id: str = Field(..., min_length=1)
     recipe_id: str = Field(..., min_length=1)
 
 
@@ -268,10 +268,14 @@ class UserProfileResponse(BaseModel):
 
 class CreateProfileRequest(BaseModel):
     """Body for creating the caller's own profile. There is no `user_id`
-    field — the id comes from the verified bearer token, never the client."""
+    field — the id comes from the verified bearer token, never the client.
+
+    `email` is stored (not just used at sign-up) so a later forgot-password
+    request by username can be resolved to an email server-side."""
 
     username: str = Field(..., min_length=1)
     display_name: str = Field(..., min_length=1)
+    email: str = Field(..., min_length=1)
 
 
 class UpdateProfileRequest(BaseModel):

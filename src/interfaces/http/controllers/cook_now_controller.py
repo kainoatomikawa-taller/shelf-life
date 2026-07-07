@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 
 from src.application.dtos.cook_now_dtos import GetCookNowFeedInput
 from src.domain.exceptions import DomainError, UserNotFoundError
-from src.interfaces.http.dependencies import GetCookNowFeedUseCaseDep
+from src.interfaces.http.dependencies import CurrentUserIdDep, GetCookNowFeedUseCaseDep
 from src.interfaces.http.schemas import RecipeCardResponse
 
 router = APIRouter(prefix="/cook-now", tags=["cook-now"])
@@ -21,13 +21,13 @@ router = APIRouter(prefix="/cook-now", tags=["cook-now"])
 
 @router.get("/feed", response_model=list[RecipeCardResponse])
 async def get_cook_now_feed(
+    current_user_id: CurrentUserIdDep,
     use_case: GetCookNowFeedUseCaseDep,
-    user_id: str = Query(..., min_length=1),
     tab: str = Query("for_you"),
 ) -> list[RecipeCardResponse]:
     try:
         outputs = await use_case.execute(
-            GetCookNowFeedInput(user_id=user_id, tab=tab)
+            GetCookNowFeedInput(user_id=current_user_id, tab=tab)
         )
     except UserNotFoundError as exc:
         raise HTTPException(

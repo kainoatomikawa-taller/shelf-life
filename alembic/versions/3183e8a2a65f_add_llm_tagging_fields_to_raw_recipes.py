@@ -21,6 +21,7 @@ Design notes
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import ARRAY
 
 # revision identifiers, used by Alembic.
@@ -29,7 +30,7 @@ down_revision = "d3e4f5a6b7c8"
 branch_labels = None
 depends_on = None
 
-_SKILL_LEVEL = sa.Enum(
+_SKILL_LEVEL = postgresql.ENUM(
     "beginner",
     "intermediate",
     "advanced",
@@ -37,7 +38,7 @@ _SKILL_LEVEL = sa.Enum(
     create_type=False,
 )
 
-_INGREDIENT_ROLE = sa.Enum(
+_INGREDIENT_ROLE = postgresql.ENUM(
     "essential",
     "optional",
     name="ingredient_role",

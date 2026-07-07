@@ -17,20 +17,16 @@ import type {DiscoverTab} from '../../domain/DiscoverRecipeCard';
 import {DiscoverRecipeCardView} from './DiscoverRecipeCardView';
 import {useDiscoverFeed} from './useDiscoverFeed';
 
-interface Props {
-  userId: string;
-}
-
 const TABS: readonly DiscoverTab[] = ['for_you', 'explore'];
 
 function tabLabel(tab: DiscoverTab): string {
   return tab === 'for_you' ? 'For You' : 'Explore';
 }
 
-export function DiscoverScreen({userId}: Props): React.JSX.Element {
+export function DiscoverScreen(): React.JSX.Element {
   const [tab, setTab] = useState<DiscoverTab>('for_you');
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
-  const {cards, loading, error} = useDiscoverFeed(userId, tab);
+  const {cards, loading, error} = useDiscoverFeed(tab);
 
   if (selectedRecipeId) {
     return (

@@ -99,7 +99,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "diet_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "omnivore",
                 "vegetarian",
                 "vegan",
@@ -151,7 +151,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "skill_level",
-            sa.Enum(
+            postgresql.ENUM(
                 "beginner",
                 "intermediate",
                 "advanced",
@@ -175,7 +175,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "budget_sensitivity",
-            sa.Enum(
+            postgresql.ENUM(
                 "low",
                 "medium",
                 "high",
@@ -220,12 +220,14 @@ def upgrade() -> None:
         ),
         sa.Column(
             "quantity_state",
-            sa.Enum("in", "low", "out", name="quantity_state", create_type=False),
+            postgresql.ENUM(
+                "in", "low", "out", name="quantity_state", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column(
             "storage_location",
-            sa.Enum(
+            postgresql.ENUM(
                 "fridge",
                 "counter",
                 "freezer",
@@ -241,7 +243,7 @@ def upgrade() -> None:
         sa.Column("computed_freshness_date", sa.Date(), nullable=False),
         sa.Column(
             "freshness_date_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "package",
                 "est-from-purchase",
                 "est-unknown",
@@ -252,7 +254,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "freshness_status",
-            sa.Enum(
+            postgresql.ENUM(
                 "fresh",
                 "use_soon",
                 "use_now",
@@ -368,7 +370,7 @@ def downgrade() -> None:
         ),
         sa.Column(
             "diet_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "omnivore",
                 "vegetarian",
                 "vegan",
@@ -420,7 +422,7 @@ def downgrade() -> None:
         ),
         sa.Column(
             "skill_level",
-            sa.Enum(
+            postgresql.ENUM(
                 "beginner",
                 "intermediate",
                 "advanced",
@@ -444,7 +446,7 @@ def downgrade() -> None:
         ),
         sa.Column(
             "budget_sensitivity",
-            sa.Enum(
+            postgresql.ENUM(
                 "low",
                 "medium",
                 "high",
@@ -488,12 +490,14 @@ def downgrade() -> None:
         ),
         sa.Column(
             "quantity_state",
-            sa.Enum("in", "low", "out", name="quantity_state", create_type=False),
+            postgresql.ENUM(
+                "in", "low", "out", name="quantity_state", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column(
             "storage_location",
-            sa.Enum(
+            postgresql.ENUM(
                 "fridge",
                 "counter",
                 "freezer",
@@ -509,7 +513,7 @@ def downgrade() -> None:
         sa.Column("computed_freshness_date", sa.Date(), nullable=False),
         sa.Column(
             "freshness_date_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "package",
                 "est-from-purchase",
                 "est-unknown",
@@ -520,7 +524,7 @@ def downgrade() -> None:
         ),
         sa.Column(
             "freshness_status",
-            sa.Enum(
+            postgresql.ENUM(
                 "fresh",
                 "use_soon",
                 "use_now",

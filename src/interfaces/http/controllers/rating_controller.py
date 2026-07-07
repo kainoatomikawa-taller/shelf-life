@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, status
 
 from src.application.dtos.rating_dtos import (
     DecrementRecipeIngredientsInput,
@@ -21,6 +21,7 @@ from src.domain.exceptions import (
     UserNotFoundError,
 )
 from src.interfaces.http.dependencies import (
+    CurrentUserIdDep,
     DecrementRecipeIngredientsUseCaseDep,
     GetUserRatingsUseCaseDep,
     SubmitRatingUseCaseDep,
@@ -38,13 +39,13 @@ router = APIRouter(prefix="/ratings", tags=["ratings"])
 
 @router.get("", response_model=list[UserRatingResponse])
 async def get_user_ratings(
+    current_user_id: CurrentUserIdDep,
     use_case: GetUserRatingsUseCaseDep,
-    user_id: str = Query(..., min_length=1),
 ) -> list[UserRatingResponse]:
     """Every rating the user has recorded, most recent first — backs the
     session-launch auto-load."""
     try:
-        outputs = await use_case.execute(GetUserRatingsInput(user_id=user_id))
+        outputs = await use_case.execute(GetUserRatingsInput(user_id=current_user_id))
     except UserNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
@@ -54,7 +55,9 @@ async def get_user_ratings(
 
 @router.post("", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)
 async def submit_rating(
-    body: SubmitRatingRequest, use_case: SubmitRatingUseCaseDep
+    body: SubmitRatingRequest,
+    current_user_id: CurrentUserIdDep,
+    use_case: SubmitRatingUseCaseDep,
 ) -> RatingResponse:
     """Star/thumb rating plus optional quick tags (AC1). Surfaces which
     ingredients are eligible for the optional stock decrement without
@@ -62,7 +65,7 @@ async def submit_rating(
     try:
         output = await use_case.execute(
             SubmitRatingInput(
-                user_id=body.user_id,
+                user_id=current_user_id,
                 recipe_id=body.recipe_id,
                 stars=body.stars,
                 quick_tags=body.quick_tags,
@@ -78,6 +81,7 @@ async def submit_rating(
 @router.post("/decrement-stock", response_model=list[InventoryItemResponse])
 async def decrement_recipe_ingredients(
     body: DecrementRecipeIngredientsRequest,
+    current_user_id: CurrentUserIdDep,
     use_case: DecrementRecipeIngredientsUseCaseDep,
 ) -> list[InventoryItemResponse]:
     """Opt-in application of the stock decrement the rating prompt offered
@@ -85,7 +89,7 @@ async def decrement_recipe_ingredients(
     try:
         outputs = await use_case.execute(
             DecrementRecipeIngredientsInput(
-                user_id=body.user_id, recipe_id=body.recipe_id
+                user_id=current_user_id, recipe_id=body.recipe_id
             )
         )
     except (UserNotFoundError, RecipeNotFoundError) as exc:

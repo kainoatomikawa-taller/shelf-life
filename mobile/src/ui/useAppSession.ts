@@ -17,7 +17,7 @@ import {AuthApi} from '../data/AuthApi';
 import {RatingApi} from '../data/RatingApi';
 import {ShoppingListApi} from '../data/ShoppingListApi';
 import {UserApi} from '../data/UserApi';
-import {supabase} from '../data/supabaseClient';
+import {getAccessToken, supabase} from '../data/supabaseClient';
 import type {AuthUser} from '../domain/Auth';
 
 const authApi = new AuthApi();
@@ -32,15 +32,19 @@ export function useAppSession() {
   const mounted = useRef(true);
 
   const loadForUser = useCallback(async (user: AuthUser) => {
-    const [profileResult] = await Promise.allSettled([
-      userApi.getProfile(user.id),
-      ratingApi.list(user.id),
-      shoppingListApi.list(user.id),
-    ]);
+    const accessToken = await getAccessToken();
+    let profile = null;
+    if (accessToken) {
+      const [profileResult] = await Promise.allSettled([
+        userApi.getProfile(accessToken),
+        ratingApi.list(accessToken),
+        shoppingListApi.list(accessToken),
+      ]);
+      profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
+    }
     if (!mounted.current) {
       return;
     }
-    const profile = profileResult.status === 'fulfilled' ? profileResult.value : null;
     setOnboarded(profile !== null);
     setAuthUser(user);
   }, []);

@@ -24,6 +24,7 @@ from src.domain.exceptions import (
 )
 from src.interfaces.http.dependencies import (
     AddInventoryItemUseCaseDep,
+    CurrentUserIdDep,
     ListInventoryItemsUseCaseDep,
     RemoveInventoryItemUseCaseDep,
     UpdateInventoryItemDatesUseCaseDep,
@@ -45,12 +46,14 @@ router = APIRouter(prefix="/inventory-items", tags=["inventory-items"])
     status_code=status.HTTP_201_CREATED,
 )
 async def add_inventory_item(
-    body: AddInventoryItemRequest, use_case: AddInventoryItemUseCaseDep
+    body: AddInventoryItemRequest,
+    current_user_id: CurrentUserIdDep,
+    use_case: AddInventoryItemUseCaseDep,
 ) -> InventoryItemResponse:
     try:
         output = await use_case.execute(
             AddInventoryItemInput(
-                user_id=body.user_id,
+                user_id=current_user_id,
                 ingredient_id=body.ingredient_id,
                 quantity_state=body.quantity_state,
                 storage_location=body.storage_location,
@@ -73,9 +76,9 @@ async def add_inventory_item(
 
 @router.get("", response_model=list[InventoryItemResponse])
 async def list_inventory_items(
-    user_id: str, use_case: ListInventoryItemsUseCaseDep
+    current_user_id: CurrentUserIdDep, use_case: ListInventoryItemsUseCaseDep
 ) -> list[InventoryItemResponse]:
-    outputs = await use_case.execute(ListInventoryItemsInput(user_id=user_id))
+    outputs = await use_case.execute(ListInventoryItemsInput(user_id=current_user_id))
     return [InventoryItemResponse(**asdict(o)) for o in outputs]
 
 

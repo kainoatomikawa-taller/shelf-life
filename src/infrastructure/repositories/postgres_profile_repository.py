@@ -28,6 +28,7 @@ class PostgresProfileRepository(ProfileRepository):
                 username=profile.username,
                 display_name=profile.display_name,
                 created_at=profile.created_at,
+                email=profile.email,
             )
         )
         try:
@@ -69,4 +70,5 @@ class PostgresProfileRepository(ProfileRepository):
             username=model.username,
             display_name=model.display_name,
             created_at=model.created_at,
+            email=model.email,
         )

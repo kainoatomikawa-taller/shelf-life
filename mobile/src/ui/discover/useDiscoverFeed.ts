@@ -4,11 +4,12 @@
 
 import {useCallback, useEffect, useState} from 'react';
 import {DiscoverApi} from '../../data/DiscoverApi';
+import {getAccessToken} from '../../data/supabaseClient';
 import type {DiscoverRecipeCard, DiscoverTab} from '../../domain/DiscoverRecipeCard';
 
 const api = new DiscoverApi();
 
-export function useDiscoverFeed(userId: string, tab: DiscoverTab) {
+export function useDiscoverFeed(tab: DiscoverTab) {
   const [cards, setCards] = useState<DiscoverRecipeCard[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,13 +18,17 @@ export function useDiscoverFeed(userId: string, tab: DiscoverTab) {
     setLoading(true);
     setError(null);
     try {
-      setCards(await api.getFeed(userId, tab));
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error('Not signed in');
+      }
+      setCards(await api.getFeed(accessToken, tab));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [userId, tab]);
+  }, [tab]);
 
   useEffect(() => {
     void refresh();

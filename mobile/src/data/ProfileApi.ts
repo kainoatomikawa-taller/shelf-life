@@ -44,12 +44,15 @@ export class ProfileApi {
   /**
    * Creates the caller's profile. A 409 means either this account already
    * has one (benign — resolved by re-fetching it) or the username is taken
-   * by someone else (surfaced as an error).
+   * by someone else (surfaced as an error). `email` is stored alongside the
+   * username/display name so a later forgot-password request by username
+   * can be resolved to an email server-side.
    */
   async create(
     accessToken: string,
     username: string,
     displayName: string,
+    email: string,
   ): Promise<Profile> {
     const res = await fetch(`${this.baseUrl}/profiles`, {
       method: 'POST',
@@ -57,7 +60,7 @@ export class ProfileApi {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({username, display_name: displayName}),
+      body: JSON.stringify({username, display_name: displayName, email}),
     });
     if (res.status === 409) {
       const existing = await this.getMine(accessToken);

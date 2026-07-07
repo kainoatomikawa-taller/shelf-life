@@ -53,7 +53,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "category",
-            sa.Enum(
+            postgresql.ENUM(
                 "perishable_fridge",
                 "perishable_counter",
                 "frozen",
@@ -66,7 +66,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "default_storage_location",
-            sa.Enum(
+            postgresql.ENUM(
                 "fridge",
                 "counter",
                 "freezer",

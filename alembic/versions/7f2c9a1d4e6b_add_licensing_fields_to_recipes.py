@@ -24,6 +24,7 @@ Design notes
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "7f2c9a1d4e6b"
@@ -68,7 +69,7 @@ def upgrade() -> None:
         "recipes",
         sa.Column(
             "image_license",
-            sa.Enum(
+            postgresql.ENUM(
                 "public-domain",
                 "cc0",
                 "cc-by",

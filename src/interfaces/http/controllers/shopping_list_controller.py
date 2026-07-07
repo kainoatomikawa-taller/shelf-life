@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, status
 
 from src.application.dtos.inventory_item_dtos import InventoryItemOutput
 from src.application.dtos.shopping_list_dtos import (
@@ -26,6 +26,7 @@ from src.domain.exceptions import (
 from src.interfaces.http.dependencies import (
     AddPurchasesToKitchenUseCaseDep,
     CheckShoppingListItemUseCaseDep,
+    CurrentUserIdDep,
     GetShoppingListUseCaseDep,
 )
 from src.interfaces.http.schemas import (
@@ -40,13 +41,15 @@ router = APIRouter(prefix="/shopping-list", tags=["shopping-list"])
 
 @router.get("", response_model=list[ShoppingListEntryResponse])
 async def get_shopping_list(
+    current_user_id: CurrentUserIdDep,
     use_case: GetShoppingListUseCaseDep,
-    user_id: str = Query(..., min_length=1),
 ) -> list[ShoppingListEntryResponse]:
     """Aggregates Discover-sourced items with Low/Out inventory flags,
     merging duplicates (AC1)."""
     try:
-        outputs = await use_case.execute(GetShoppingListInput(user_id=user_id))
+        outputs = await use_case.execute(
+            GetShoppingListInput(user_id=current_user_id)
+        )
     except UserNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
@@ -83,6 +86,7 @@ async def check_shopping_list_item(
 @router.post("/purchases", response_model=list[InventoryItemResponse])
 async def add_purchases_to_kitchen(
     body: AddPurchasesToKitchenRequest,
+    current_user_id: CurrentUserIdDep,
     use_case: AddPurchasesToKitchenUseCaseDep,
 ) -> list[InventoryItemResponse]:
     """On trip complete, adds every checked-off item to the Kitchen,
@@ -90,7 +94,7 @@ async def add_purchases_to_kitchen(
     try:
         outputs: list[InventoryItemOutput] = await use_case.execute(
             AddPurchasesToKitchenInput(
-                user_id=body.user_id, purchase_date=body.purchase_date
+                user_id=current_user_id, purchase_date=body.purchase_date
             )
         )
     except UserNotFoundError as exc:

@@ -1,7 +1,7 @@
 /**
- * Thin API client for adding an inventory item from the add-item screen
- * (§5.2). Only ownerId/ingredientId are required — every other field is
- * skippable and left undefined so the backend applies its smart defaults.
+ * Thin API client for the Kitchen tab and the add-item screen (§5.2).
+ * Bearer-authenticated — the backend derives the caller's identity from the
+ * verified Supabase access token rather than a client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -73,7 +73,6 @@ function toDomain(dto: InventoryItemResponse): InventoryItem {
 }
 
 export interface AddInventoryItemPayload {
-  userId: string;
   ingredientId: string;
   quantityState?: QuantityState;
   storageLocation?: StorageLocation;
@@ -85,12 +84,17 @@ export interface AddInventoryItemPayload {
 export class InventoryApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
-  async add(payload: AddInventoryItemPayload): Promise<InventoryItem> {
+  async add(
+    accessToken: string,
+    payload: AddInventoryItemPayload,
+  ): Promise<InventoryItem> {
     const res = await fetch(`${this.baseUrl}/inventory-items`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({
-        user_id: payload.userId,
         ingredient_id: payload.ingredientId,
         quantity_state: payload.quantityState ?? null,
         storage_location: payload.storageLocation ?? null,
@@ -105,10 +109,10 @@ export class InventoryApi {
     return toDomain((await res.json()) as InventoryItemResponse);
   }
 
-  async list(userId: string): Promise<InventoryItem[]> {
-    const res = await fetch(
-      `${this.baseUrl}/inventory-items?user_id=${encodeURIComponent(userId)}`,
-    );
+  async list(accessToken: string): Promise<InventoryItem[]> {
+    const res = await fetch(`${this.baseUrl}/inventory-items`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (!res.ok) {
       throw new Error(`Failed to load inventory items: ${res.status}`);
     }
@@ -118,6 +122,7 @@ export class InventoryApi {
 
   /** One-tap Mark Low / Mark Out (and undo, Mark In) (§5.2 AC2). */
   async updateQuantityState(
+    accessToken: string,
     itemId: string,
     quantityState: QuantityState,
   ): Promise<InventoryItem> {
@@ -125,7 +130,10 @@ export class InventoryApi {
       `${this.baseUrl}/inventory-items/${encodeURIComponent(itemId)}/quantity-state`,
       {
         method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({quantity_state: quantityState}),
       },
     );
@@ -137,6 +145,7 @@ export class InventoryApi {
 
   /** The "edit dates" quick action (§5.2) — replaces both dates wholesale. */
   async updateDates(
+    accessToken: string,
     itemId: string,
     dates: {purchaseDate?: string; printedPackageDate?: string},
   ): Promise<InventoryItem> {
@@ -144,7 +153,10 @@ export class InventoryApi {
       `${this.baseUrl}/inventory-items/${encodeURIComponent(itemId)}/dates`,
       {
         method: 'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           purchase_date: dates.purchaseDate ?? null,
           printed_package_date: dates.printedPackageDate ?? null,
@@ -158,10 +170,13 @@ export class InventoryApi {
   }
 
   /** Used-it-up / delete quick actions (§5.2 AC2) — both remove the item. */
-  async remove(itemId: string): Promise<void> {
+  async remove(accessToken: string, itemId: string): Promise<void> {
     const res = await fetch(
       `${this.baseUrl}/inventory-items/${encodeURIComponent(itemId)}`,
-      {method: 'DELETE'},
+      {
+        method: 'DELETE',
+        headers: {Authorization: `Bearer ${accessToken}`},
+      },
     );
     if (!res.ok) {
       throw new Error(`Failed to remove inventory item: ${res.status}`);

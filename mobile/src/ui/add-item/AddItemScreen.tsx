@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import {InventoryApi} from '../../data/InventoryApi';
+import {getAccessToken} from '../../data/supabaseClient';
 import {
   matchedAlias,
   QUANTITY_STATES,
@@ -30,17 +31,13 @@ import {
 import {SingleSelectChips} from './components/SingleSelectChips';
 import {useIngredientSearch} from './useIngredientSearch';
 
-interface Props {
-  userId: string;
-}
-
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
 const api = new InventoryApi();
 
-export function AddItemScreen({userId}: Props): React.JSX.Element {
+export function AddItemScreen(): React.JSX.Element {
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<IngredientSummary | null>(null);
   const [quantityState, setQuantityState] = useState<QuantityState>('in');
@@ -81,8 +78,11 @@ export function AddItemScreen({userId}: Props): React.JSX.Element {
     setAdding(true);
     setError(null);
     try {
-      const item = await api.add({
-        userId,
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error('Not signed in');
+      }
+      const item = await api.add(accessToken, {
         ingredientId: selected.id,
         quantityState,
         storageLocation: effectiveStorageLocation,

@@ -20,13 +20,20 @@ async def test_creates_a_profile_with_a_normalized_username() -> None:
     use_case = CreateProfileUseCase(repository)
 
     output = await use_case.execute(
-        CreateProfileInput(user_id=USER_ID, username="Alice", display_name="Alice Doe")
+        CreateProfileInput(
+            user_id=USER_ID,
+            username="Alice",
+            display_name="Alice Doe",
+            email="alice@example.com",
+        )
     )
 
     assert output.id == USER_ID
     assert output.username == "alice"
     assert output.display_name == "Alice Doe"
-    assert await repository.get_by_id(USER_ID) is not None
+    stored = await repository.get_by_id(USER_ID)
+    assert stored is not None
+    assert stored.email == "alice@example.com"
 
 
 @pytest.mark.asyncio
@@ -34,12 +41,22 @@ async def test_existing_profile_for_user_raises_already_exists() -> None:
     repository = InMemoryProfileRepository()
     use_case = CreateProfileUseCase(repository)
     await use_case.execute(
-        CreateProfileInput(user_id=USER_ID, username="alice", display_name="Alice")
+        CreateProfileInput(
+            user_id=USER_ID,
+            username="alice",
+            display_name="Alice",
+            email="alice@example.com",
+        )
     )
 
     with pytest.raises(ProfileAlreadyExistsError):
         await use_case.execute(
-            CreateProfileInput(user_id=USER_ID, username="alice2", display_name="Alice")
+            CreateProfileInput(
+                user_id=USER_ID,
+                username="alice2",
+                display_name="Alice",
+                email="alice@example.com",
+            )
         )
 
 
@@ -48,13 +65,21 @@ async def test_username_taken_case_insensitively_raises() -> None:
     repository = InMemoryProfileRepository()
     use_case = CreateProfileUseCase(repository)
     await use_case.execute(
-        CreateProfileInput(user_id=USER_ID, username="alice", display_name="Alice")
+        CreateProfileInput(
+            user_id=USER_ID,
+            username="alice",
+            display_name="Alice",
+            email="alice@example.com",
+        )
     )
 
     with pytest.raises(UsernameAlreadyTakenError):
         await use_case.execute(
             CreateProfileInput(
-                user_id=OTHER_USER_ID, username="ALICE", display_name="Someone Else"
+                user_id=OTHER_USER_ID,
+                username="ALICE",
+                display_name="Someone Else",
+                email="someone@example.com",
             )
         )
 

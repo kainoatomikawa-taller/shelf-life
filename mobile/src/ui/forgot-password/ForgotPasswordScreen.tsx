@@ -1,6 +1,9 @@
 /**
- * Login screen: username + password against the login-with-username edge
- * function. Routes into the authenticated app on success.
+ * Forgot-password screen: a single username-or-email input against the
+ * "forgot-password" edge function. Always ends on the same confirmation
+ * message, whether or not the identifier matched an account, so the flow
+ * never reveals account existence. Setting the new password itself happens
+ * on the link Supabase emails, outside the app.
  */
 
 import React from 'react';
@@ -14,54 +17,46 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import type {AuthUser} from '../../domain/Auth';
-import {useLogin} from './useLogin';
+import {useForgotPassword} from './useForgotPassword';
 
 interface Props {
-  onLoggedIn: (user: AuthUser) => void;
-  onSwitchToSignUp: () => void;
-  onForgotPassword: () => void;
+  onBackToLogin: () => void;
 }
 
-export function LoginScreen({
-  onLoggedIn,
-  onSwitchToSignUp,
-  onForgotPassword,
-}: Props): React.JSX.Element {
-  const {
-    username,
-    setUsername,
-    password,
-    setPassword,
-    submitting,
-    error,
-    canSubmit,
-    submit,
-  } = useLogin(onLoggedIn);
+export function ForgotPasswordScreen({onBackToLogin}: Props): React.JSX.Element {
+  const {identifier, setIdentifier, submitting, error, submitted, canSubmit, submit} =
+    useForgotPassword();
+
+  if (submitted) {
+    return (
+      <View style={styles.content}>
+        <Text style={styles.title}>Check your email</Text>
+        <Text style={styles.subtitle}>
+          If that username or email matches an account, we've sent a link to reset
+          your password.
+        </Text>
+        <TouchableOpacity style={styles.switchLink} onPress={onBackToLogin}>
+          <Text style={styles.switchLinkText}>Back to log in</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.content}>
-        <Text style={styles.title}>Shelf Life</Text>
-        <Text style={styles.subtitle}>Sign in to continue</Text>
+        <Text style={styles.title}>Forgot password?</Text>
+        <Text style={styles.subtitle}>
+          Enter your username or email and we'll send you a reset link.
+        </Text>
 
         <TextInput
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Username"
+          value={identifier}
+          onChangeText={setIdentifier}
+          placeholder="Username or email"
           style={styles.input}
-          autoCapitalize="none"
-          autoCorrect={false}
-          editable={!submitting}
-        />
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Password"
-          style={styles.input}
-          secureTextEntry
           autoCapitalize="none"
           autoCorrect={false}
           editable={!submitting}
@@ -71,28 +66,21 @@ export function LoginScreen({
         {error && <Text style={styles.error}>{error}</Text>}
 
         <TouchableOpacity
-          style={styles.forgotPasswordLink}
-          onPress={onForgotPassword}
-          disabled={submitting}>
-          <Text style={styles.switchLinkText}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
           style={[styles.button, !canSubmit && styles.buttonDisabled]}
           disabled={!canSubmit}
           onPress={() => void submit()}>
           {submitting ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Log in</Text>
+            <Text style={styles.buttonText}>Send reset link</Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.switchLink}
-          onPress={onSwitchToSignUp}
+          onPress={onBackToLogin}
           disabled={submitting}>
-          <Text style={styles.switchLinkText}>Don't have an account? Sign up</Text>
+          <Text style={styles.switchLinkText}>Back to log in</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -120,7 +108,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   error: {color: '#c62828', marginBottom: 12},
-  forgotPasswordLink: {alignItems: 'flex-end', marginBottom: 4},
   button: {
     marginTop: 8,
     paddingVertical: 14,

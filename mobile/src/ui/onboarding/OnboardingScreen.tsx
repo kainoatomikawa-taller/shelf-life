@@ -79,13 +79,12 @@ const STEPS: StepConfig[] = [
 ];
 
 interface Props {
-  userId: string;
   onComplete: () => void;
 }
 
-export function OnboardingScreen({userId, onComplete}: Props): React.JSX.Element {
+export function OnboardingScreen({onComplete}: Props): React.JSX.Element {
   const {answers, stepIndex, updateAnswers, continueStep, skipStep, submitting, error} =
-    useOnboarding(userId, onComplete);
+    useOnboarding(onComplete);
 
   const step = STEPS[stepIndex];
   if (!step) {

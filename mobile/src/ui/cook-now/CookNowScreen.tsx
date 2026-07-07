@@ -22,7 +22,6 @@ import {RecipeCardView} from './RecipeCardView';
 import {useCookNowFeed} from './useCookNowFeed';
 
 interface Props {
-  userId: string;
   filterIngredientName?: string | null;
   onBack: () => void;
 }
@@ -34,13 +33,12 @@ function tabLabel(tab: CookNowTab): string {
 }
 
 export function CookNowScreen({
-  userId,
   filterIngredientName,
   onBack,
 }: Props): React.JSX.Element {
   const [tab, setTab] = useState<CookNowTab>('for_you');
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(null);
-  const {cards, loading, error} = useCookNowFeed(userId, tab);
+  const {cards, loading, error} = useCookNowFeed(tab);
 
   if (selectedRecipeId) {
     return (

@@ -111,7 +111,7 @@ RepositoryDep = Annotated[
 ]
 
 
-def get_user_repository(session: SessionDep) -> PostgresUserRepository:
+def get_user_repository(session: AuthenticatedSessionDep) -> PostgresUserRepository:
     return PostgresUserRepository(session)
 
 
@@ -173,7 +173,7 @@ IngredientRepositoryDep = Annotated[
 
 
 def get_inventory_item_repository(
-    session: SessionDep,
+    session: AuthenticatedSessionDep,
 ) -> PostgresInventoryItemRepository:
     return PostgresInventoryItemRepository(session)
 
@@ -300,7 +300,7 @@ GetCookNowFeedUseCaseDep = Annotated[
 
 
 def get_shopping_list_item_repository(
-    session: SessionDep,
+    session: AuthenticatedSessionDep,
 ) -> PostgresShoppingListItemRepository:
     return PostgresShoppingListItemRepository(session)
 
@@ -444,7 +444,7 @@ AddPurchasesToKitchenUseCaseDep = Annotated[
 ]
 
 
-def get_rating_repository(session: SessionDep) -> PostgresRatingRepository:
+def get_rating_repository(session: AuthenticatedSessionDep) -> PostgresRatingRepository:
     return PostgresRatingRepository(session)
 
 

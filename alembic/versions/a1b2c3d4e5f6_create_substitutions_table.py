@@ -58,7 +58,7 @@ def upgrade() -> None:
         sa.Column("ratio_note", sa.Text(), nullable=True),
         sa.Column(
             "context",
-            sa.Enum(
+            postgresql.ENUM(
                 "baking",
                 "savory",
                 "general",

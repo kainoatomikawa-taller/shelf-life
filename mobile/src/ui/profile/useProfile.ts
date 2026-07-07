@@ -6,6 +6,7 @@
 
 import {useCallback, useEffect, useState} from 'react';
 import {UserApi} from '../../data/UserApi';
+import {getAccessToken} from '../../data/supabaseClient';
 import {
   DEFAULT_FLAVOR_PROFILE,
   DEFAULT_ONBOARDING_ANSWERS,
@@ -16,7 +17,7 @@ import {
 
 const api = new UserApi();
 
-export function useProfile(userId: string) {
+export function useProfile() {
   const [answers, setAnswers] = useState<OnboardingAnswers | null>(null);
   const [tasteVector, setTasteVector] = useState<FlavorProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +31,11 @@ export function useProfile(userId: string) {
       setLoading(true);
       setError(null);
       try {
-        const profile = await api.getProfile(userId);
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          throw new Error('Not signed in');
+        }
+        const profile = await api.getProfile(accessToken);
         if (cancelled) {
           return;
         }
@@ -55,23 +60,24 @@ export function useProfile(userId: string) {
     return () => {
       cancelled = true;
     };
-  }, [userId]);
+  }, []);
 
-  const save = useCallback(
-    async (next: OnboardingAnswers) => {
-      setSaving(true);
-      setError(null);
-      try {
-        const profile = await api.submitOnboarding(userId, next);
-        setTasteVector(profile.tasteVector);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Unknown error');
-      } finally {
-        setSaving(false);
+  const save = useCallback(async (next: OnboardingAnswers) => {
+    setSaving(true);
+    setError(null);
+    try {
+      const accessToken = await getAccessToken();
+      if (!accessToken) {
+        throw new Error('Not signed in');
       }
-    },
-    [userId],
-  );
+      const profile = await api.submitOnboarding(accessToken, next);
+      setTasteVector(profile.tasteVector);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error');
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
   const updateAnswers = useCallback(
     (partial: Partial<OnboardingAnswers>) => {

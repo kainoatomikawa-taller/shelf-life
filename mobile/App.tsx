@@ -16,6 +16,7 @@ import {
 import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
 import {CookNowScreen} from './src/ui/cook-now/CookNowScreen';
 import {DiscoverScreen} from './src/ui/discover/DiscoverScreen';
+import {ForgotPasswordScreen} from './src/ui/forgot-password/ForgotPasswordScreen';
 import {KitchenScreen} from './src/ui/kitchen/KitchenScreen';
 import {LoginScreen} from './src/ui/login/LoginScreen';
 import {SignUpScreen} from './src/ui/sign-up/SignUpScreen';
@@ -24,7 +25,7 @@ import {ProfileScreen} from './src/ui/profile/ProfileScreen';
 import {useAppSession} from './src/ui/useAppSession';
 
 type Tab = 'kitchen' | 'cookNow' | 'discover' | 'add' | 'profile';
-type AuthMode = 'login' | 'signUp';
+type AuthMode = 'login' | 'signUp' | 'forgotPassword';
 
 function App(): React.JSX.Element {
   const {
@@ -54,35 +55,34 @@ function App(): React.JSX.Element {
     return (
       <SafeAreaView style={styles.root}>
         <StatusBar barStyle="dark-content" />
-        {authMode === 'login' ? (
+        {authMode === 'login' && (
           <LoginScreen
             onLoggedIn={signIn}
             onSwitchToSignUp={() => setAuthMode('signUp')}
+            onForgotPassword={() => setAuthMode('forgotPassword')}
           />
-        ) : (
+        )}
+        {authMode === 'signUp' && (
           <SignUpScreen
             onSignedUp={signIn}
             onSwitchToLogin={() => setAuthMode('login')}
           />
         )}
+        {authMode === 'forgotPassword' && (
+          <ForgotPasswordScreen onBackToLogin={() => setAuthMode('login')} />
+        )}
       </SafeAreaView>
     );
   }
-
-  const userId = authUser.id;
 
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar barStyle="dark-content" />
       {!onboarded && (
-        <OnboardingScreen
-          userId={userId}
-          onComplete={() => setOnboarded(true)}
-        />
+        <OnboardingScreen onComplete={() => setOnboarded(true)} />
       )}
       {onboarded && cookNowIngredient && (
         <CookNowScreen
-          userId={userId}
           filterIngredientName={cookNowIngredient}
           onBack={() => setCookNowIngredient(null)}
         />
@@ -91,19 +91,15 @@ function App(): React.JSX.Element {
         <>
           {activeTab === 'kitchen' && (
             <KitchenScreen
-              userId={userId}
               displayName={authUser.name}
               onCookNow={item => setCookNowIngredient(item.ingredientName)}
             />
           )}
           {activeTab === 'cookNow' && (
-            <CookNowScreen
-              userId={userId}
-              onBack={() => setActiveTab('kitchen')}
-            />
+            <CookNowScreen onBack={() => setActiveTab('kitchen')} />
           )}
-          {activeTab === 'discover' && <DiscoverScreen userId={userId} />}
-          {activeTab === 'add' && <AddItemScreen userId={userId} />}
+          {activeTab === 'discover' && <DiscoverScreen />}
+          {activeTab === 'add' && <AddItemScreen />}
           {activeTab === 'profile' && (
             <ProfileScreen
               authUser={authUser}

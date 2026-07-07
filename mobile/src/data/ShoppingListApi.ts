@@ -1,5 +1,7 @@
 /**
- * Thin API client for the Shopping List tab.
+ * Thin API client for the Shopping List tab. Bearer-authenticated — the
+ * backend derives the caller's identity from the verified Supabase access
+ * token rather than a client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -28,10 +30,10 @@ function toDomain(dto: ShoppingListEntryResponse): ShoppingListEntry {
 export class ShoppingListApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
-  async list(userId: string): Promise<ShoppingListEntry[]> {
-    const res = await fetch(
-      `${this.baseUrl}/shopping-list?user_id=${encodeURIComponent(userId)}`,
-    );
+  async list(accessToken: string): Promise<ShoppingListEntry[]> {
+    const res = await fetch(`${this.baseUrl}/shopping-list`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (!res.ok) {
       throw new Error(`Failed to load shopping list: ${res.status}`);
     }

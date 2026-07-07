@@ -24,6 +24,7 @@ interface AuthEdgeFunctionResponse {
 
 const LOGIN_FAILED = 'Incorrect username or password. Please try again.';
 const SIGN_UP_FAILED = 'Sign up failed. Please try again.';
+const RESET_REQUEST_FAILED = 'Something went wrong. Please try again.';
 
 const profileApi = new ProfileApi();
 
@@ -94,8 +95,27 @@ export class AuthApi {
       data.session.access_token,
       fields.username,
       fields.name,
+      fields.email,
     );
     return toAuthUser(profile);
+  }
+
+  /**
+   * Requests a password-reset email via the "forgot-password" edge
+   * function, which accepts a username or an email. Username resolution
+   * happens server-side (the client never learns whether the identifier
+   * matched an account) — this always resolves on a successful call to the
+   * function, regardless of whether a matching account exists, so the UI
+   * can show one generic confirmation message without leaking account
+   * existence.
+   */
+  async requestPasswordReset(identifier: string): Promise<void> {
+    const {error} = await supabase.functions.invoke('forgot-password', {
+      body: {identifier},
+    });
+    if (error) {
+      throw new Error(await extractErrorMessage(error, RESET_REQUEST_FAILED));
+    }
   }
 
   /**

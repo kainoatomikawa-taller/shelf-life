@@ -1,6 +1,8 @@
 /**
  * Thin API client for the Cook Now feed (§5.3): For You / Explore tabs of
- * recipes the user can cook right now.
+ * recipes the user can cook right now. Bearer-authenticated — the backend
+ * derives the caller's identity from the verified Supabase access token
+ * rather than a client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -75,9 +77,11 @@ function toDomain(dto: RecipeCardResponse): RecipeCard {
 export class CookNowApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
-  async getFeed(userId: string, tab: CookNowTab): Promise<RecipeCard[]> {
-    const params = new URLSearchParams({user_id: userId, tab});
-    const res = await fetch(`${this.baseUrl}/cook-now/feed?${params}`);
+  async getFeed(accessToken: string, tab: CookNowTab): Promise<RecipeCard[]> {
+    const params = new URLSearchParams({tab});
+    const res = await fetch(`${this.baseUrl}/cook-now/feed?${params}`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (!res.ok) {
       throw new Error(`Failed to load Cook Now feed: ${res.status}`);
     }

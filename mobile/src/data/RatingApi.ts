@@ -1,5 +1,7 @@
 /**
- * Thin API client for a user's rating history.
+ * Thin API client for a user's rating history. Bearer-authenticated — the
+ * backend derives the caller's identity from the verified Supabase access
+ * token rather than a client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -29,10 +31,10 @@ export class RatingApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
   /** Returns an empty list for a user who hasn't completed onboarding yet. */
-  async list(userId: string): Promise<Rating[]> {
-    const res = await fetch(
-      `${this.baseUrl}/ratings?user_id=${encodeURIComponent(userId)}`,
-    );
+  async list(accessToken: string): Promise<Rating[]> {
+    const res = await fetch(`${this.baseUrl}/ratings`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (res.status === 404) {
       return [];
     }

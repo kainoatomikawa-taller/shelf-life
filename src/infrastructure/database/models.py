@@ -366,6 +366,12 @@ class ProfileModel(Base):
     the Profile entity's constructor) so a plain unique constraint gives
     case-insensitive uniqueness; the check constraint below defends that
     invariant against writes that bypass the application layer.
+
+    `email` exists solely so the forgot-password edge function can resolve a
+    username to an email server-side (Supabase Auth's own `auth.users` table
+    isn't part of our migrations). It's nullable because profiles created
+    before that column existed have none on file; every new profile supplies
+    one.
     """
 
     __tablename__ = "profiles"
@@ -373,6 +379,7 @@ class ProfileModel(Base):
     id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
     username: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     display_name: Mapped[str] = mapped_column(Text, nullable=False)
+    email: Mapped[str | None] = mapped_column(Text, nullable=True, unique=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

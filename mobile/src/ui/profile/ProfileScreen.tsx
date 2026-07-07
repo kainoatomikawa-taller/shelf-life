@@ -37,7 +37,7 @@ export function ProfileScreen({
   onIdentityUpdated,
 }: Props): React.JSX.Element {
   const {answers, tasteVector, loading, saving, error, updateAnswers} =
-    useProfile(authUser.id);
+    useProfile();
   const {
     username,
     setUsername,

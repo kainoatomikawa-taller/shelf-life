@@ -15,6 +15,7 @@ class CreateProfileInput:
     user_id: str
     username: str
     display_name: str
+    email: str
 
 
 @dataclass(frozen=True)

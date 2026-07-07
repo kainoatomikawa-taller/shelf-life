@@ -7,12 +7,21 @@
 
 import {useCallback, useEffect, useState} from 'react';
 import {InventoryApi} from '../../data/InventoryApi';
+import {getAccessToken} from '../../data/supabaseClient';
 import type {QuantityState} from '../../domain/Ingredient';
 import type {InventoryItem} from '../../domain/InventoryItem';
 
 const api = new InventoryApi();
 
-export function useInventoryItems(userId: string) {
+async function requireAccessToken(): Promise<string> {
+  const token = await getAccessToken();
+  if (!token) {
+    throw new Error('Not signed in');
+  }
+  return token;
+}
+
+export function useInventoryItems() {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,13 +30,13 @@ export function useInventoryItems(userId: string) {
     setLoading(true);
     setError(null);
     try {
-      setItems(await api.list(userId));
+      setItems(await api.list(await requireAccessToken()));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
     void refresh();
@@ -36,7 +45,12 @@ export function useInventoryItems(userId: string) {
   const setQuantityState = useCallback(
     async (itemId: string, quantityState: QuantityState) => {
       try {
-        const updated = await api.updateQuantityState(itemId, quantityState);
+        const accessToken = await requireAccessToken();
+        const updated = await api.updateQuantityState(
+          accessToken,
+          itemId,
+          quantityState,
+        );
         setItems(current =>
           current.map(item => (item.id === itemId ? updated : item)),
         );
@@ -53,7 +67,8 @@ export function useInventoryItems(userId: string) {
       dates: {purchaseDate?: string; printedPackageDate?: string},
     ) => {
       try {
-        const updated = await api.updateDates(itemId, dates);
+        const accessToken = await requireAccessToken();
+        const updated = await api.updateDates(accessToken, itemId, dates);
         setItems(current =>
           current.map(item => (item.id === itemId ? updated : item)),
         );
@@ -66,7 +81,8 @@ export function useInventoryItems(userId: string) {
 
   const remove = useCallback(async (itemId: string) => {
     try {
-      await api.remove(itemId);
+      const accessToken = await requireAccessToken();
+      await api.remove(accessToken, itemId);
       setItems(current => current.filter(item => item.id !== itemId));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error');

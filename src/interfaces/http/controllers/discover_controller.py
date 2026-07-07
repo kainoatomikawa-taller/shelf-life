@@ -19,6 +19,7 @@ from src.application.dtos.discover_dtos import (
 from src.domain.exceptions import DomainError, RecipeNotFoundError, UserNotFoundError
 from src.interfaces.http.dependencies import (
     AddShoppingListItemsUseCaseDep,
+    CurrentUserIdDep,
     GenerateShoppingListForRecipeUseCaseDep,
     GetDiscoverFeedUseCaseDep,
 )
@@ -29,13 +30,13 @@ router = APIRouter(prefix="/discover", tags=["discover"])
 
 @router.get("/feed", response_model=list[DiscoverRecipeCardResponse])
 async def get_discover_feed(
+    current_user_id: CurrentUserIdDep,
     use_case: GetDiscoverFeedUseCaseDep,
-    user_id: str = Query(..., min_length=1),
     tab: str = Query("for_you"),
 ) -> list[DiscoverRecipeCardResponse]:
     try:
         outputs = await use_case.execute(
-            GetDiscoverFeedInput(user_id=user_id, tab=tab)
+            GetDiscoverFeedInput(user_id=current_user_id, tab=tab)
         )
     except UserNotFoundError as exc:
         raise HTTPException(
@@ -53,12 +54,12 @@ async def get_discover_feed(
 )
 async def generate_shopping_list(
     recipe_id: str,
+    current_user_id: CurrentUserIdDep,
     use_case: GenerateShoppingListForRecipeUseCaseDep,
-    user_id: str = Query(..., min_length=1),
 ) -> ShoppingListResponse:
     try:
         output = await use_case.execute(
-            GenerateShoppingListInput(user_id=user_id, recipe_id=recipe_id)
+            GenerateShoppingListInput(user_id=current_user_id, recipe_id=recipe_id)
         )
     except (UserNotFoundError, RecipeNotFoundError) as exc:
         raise HTTPException(
@@ -72,12 +73,12 @@ async def generate_shopping_list(
 )
 async def add_shopping_list_items(
     recipe_id: str,
+    current_user_id: CurrentUserIdDep,
     use_case: AddShoppingListItemsUseCaseDep,
-    user_id: str = Query(..., min_length=1),
 ) -> ShoppingListResponse:
     try:
         output = await use_case.execute(
-            AddShoppingListItemsInput(user_id=user_id, recipe_id=recipe_id)
+            AddShoppingListItemsInput(user_id=current_user_id, recipe_id=recipe_id)
         )
     except (UserNotFoundError, RecipeNotFoundError) as exc:
         raise HTTPException(

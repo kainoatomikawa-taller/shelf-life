@@ -32,7 +32,9 @@ def upgrade() -> None:
         "ingredients",
         sa.Column(
             "shelf_life_model",
-            sa.Enum("spoilage", "potency", name="shelf_life_model_type", create_type=False),
+            postgresql.ENUM(
+                "spoilage", "potency", name="shelf_life_model_type", create_type=False
+            ),
             nullable=False,
             server_default="spoilage",
         ),

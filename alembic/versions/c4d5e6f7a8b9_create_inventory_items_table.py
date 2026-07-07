@@ -73,12 +73,14 @@ def upgrade() -> None:
         ),
         sa.Column(
             "quantity_state",
-            sa.Enum("in", "low", "out", name="quantity_state", create_type=False),
+            postgresql.ENUM(
+                "in", "low", "out", name="quantity_state", create_type=False
+            ),
             nullable=False,
         ),
         sa.Column(
             "storage_location",
-            sa.Enum(
+            postgresql.ENUM(
                 "fridge",
                 "counter",
                 "freezer",
@@ -97,7 +99,7 @@ def upgrade() -> None:
         sa.Column("computed_freshness_date", sa.Date(), nullable=False),
         sa.Column(
             "freshness_date_type",
-            sa.Enum(
+            postgresql.ENUM(
                 "package",
                 "est-from-purchase",
                 "est-unknown",
@@ -108,7 +110,7 @@ def upgrade() -> None:
         ),
         sa.Column(
             "freshness_status",
-            sa.Enum(
+            postgresql.ENUM(
                 "fresh",
                 "use_soon",
                 "use_now",

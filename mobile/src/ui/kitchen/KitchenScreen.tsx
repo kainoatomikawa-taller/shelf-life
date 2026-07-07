@@ -27,7 +27,6 @@ import {useInventoryItems} from './useInventoryItems';
 import {UseItUpSoonStrip} from './UseItUpSoonStrip';
 
 interface Props {
-  userId: string;
   displayName: string;
   onCookNow: (item: InventoryItem) => void;
 }
@@ -46,12 +45,11 @@ function groupByLabel(groupBy: GroupBy): string {
 }
 
 export function KitchenScreen({
-  userId,
   displayName,
   onCookNow,
 }: Props): React.JSX.Element {
   const {items, loading, error, setQuantityState, editDates, remove} =
-    useInventoryItems(userId);
+    useInventoryItems();
   const [viewMode, setViewMode] = useState<ViewMode>('kitchen');
   const [groupBy, setGroupBy] = useState<GroupBy>('location');
 

@@ -1,6 +1,8 @@
 /**
  * Thin API client for the Discover feed (§5.4): For You / Explore tabs of
- * recipes the user could cook if they shopped.
+ * recipes the user could cook if they shopped. Bearer-authenticated — the
+ * backend derives the caller's identity from the verified Supabase access
+ * token rather than a client-supplied id.
  */
 
 import {API_BASE_URL} from './config';
@@ -35,9 +37,14 @@ function toDomain(dto: DiscoverRecipeCardResponse): DiscoverRecipeCard {
 export class DiscoverApi {
   constructor(private readonly baseUrl: string = API_BASE_URL) {}
 
-  async getFeed(userId: string, tab: DiscoverTab): Promise<DiscoverRecipeCard[]> {
-    const params = new URLSearchParams({user_id: userId, tab});
-    const res = await fetch(`${this.baseUrl}/discover/feed?${params}`);
+  async getFeed(
+    accessToken: string,
+    tab: DiscoverTab,
+  ): Promise<DiscoverRecipeCard[]> {
+    const params = new URLSearchParams({tab});
+    const res = await fetch(`${this.baseUrl}/discover/feed?${params}`, {
+      headers: {Authorization: `Bearer ${accessToken}`},
+    });
     if (!res.ok) {
       throw new Error(`Failed to load Discover feed: ${res.status}`);
     }

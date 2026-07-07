@@ -51,13 +51,37 @@ app's own schema builds on top of that id:
   `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
   column. New tables should follow this convention rather than inventing a
   separate identity concept.
-- **`public.users`** predates this convention: despite the name, it's a
-  taste/dietary-preferences table (allergies, flavor profile, taste vector),
-  keyed by an opaque `String(36)` id that its own dependents
-  (`inventory_items`, `ratings`, `shopping_list_items`) currently FK into
-  instead of `auth.users.id`. Repointing those FKs — and likely renaming the
-  table to something like `taste_profiles` — is a deliberate follow-up, not
-  part of adopting this convention.
+- **`public.users`** is a taste/dietary-preferences table (allergies, flavor
+  profile, taste vector) — despite the name, not an identity table. Its `id`
+  is `auth.users.id` (same 1:1-FK pattern as `profiles`), and
+  `inventory_items`/`ratings`/`shopping_list_items` FK `user_id` directly to
+  `auth.users.id` too, not to this table. Renaming it to something like
+  `taste_profiles` to stop it reading as an identity table is a nice-to-have,
+  not yet done.
+
+### Row-Level Security
+
+Every table above has RLS enabled, with `SELECT`/`INSERT`/`UPDATE`/`DELETE`
+policies scoping rows to the caller: `<id column> = auth.uid()` (`id` for
+`profiles`/`users`; `user_id` for the rest). `FORCE ROW LEVEL SECURITY` is
+also set, so the policies apply even to the tables' owner.
+
+**Deployment requirement, not optional:** `auth.uid()` returns NULL — and
+every policy above denies all rows — for any DB role with the `SUPERUSER` or
+`BYPASSRLS` attribute; Postgres never subjects those roles to RLS, `FORCE`
+or not. Supabase's default `postgres` connection string is often such a
+role. Whatever role `DATABASE_URL` authenticates as **must** be a plain,
+non-superuser, non-`BYPASSRLS` role, or RLS is silently a no-op for
+everything this backend does.
+
+Because our FastAPI backend talks to Postgres directly rather than through
+Supabase's PostgREST gateway (which is what normally populates
+`auth.uid()`), it sets the equivalent session claim itself, per request, for
+every endpoint that touches a user-owned table — see
+`AuthenticatedSessionDep` in `src/interfaces/http/dependencies.py`. Existing
+application-layer `user_id` filtering in use cases/repositories is
+unchanged and stays in place as a second, independent layer — RLS is a
+backstop, not a replacement.
 
 ---
 

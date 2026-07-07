@@ -38,6 +38,7 @@ class CreateProfileUseCase:
             username=dto.username,
             display_name=dto.display_name,
             created_at=datetime.now(UTC),
+            email=dto.email,
         )
         await self._repository.add(profile)
         return ProfileMapper.to_output(profile)

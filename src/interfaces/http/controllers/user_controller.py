@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, status
 from src.application.dtos.user_dtos import FlavorProfileInput, SubmitOnboardingInput
 from src.domain.exceptions import UserNotFoundError
 from src.interfaces.http.dependencies import (
+    CurrentUserIdDep,
     GetUserProfileUseCaseDep,
     SubmitOnboardingUseCaseDep,
 )
@@ -21,13 +22,13 @@ from src.interfaces.http.schemas import OnboardingRequest, UserProfileResponse
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/{user_id}/profile", response_model=UserProfileResponse)
+@router.get("/me/profile", response_model=UserProfileResponse)
 async def get_user_profile(
-    user_id: str,
+    current_user_id: CurrentUserIdDep,
     use_case: GetUserProfileUseCaseDep,
 ) -> UserProfileResponse:
     try:
-        output = await use_case.execute(user_id)
+        output = await use_case.execute(current_user_id)
     except UserNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
@@ -35,16 +36,16 @@ async def get_user_profile(
     return UserProfileResponse(**asdict(output))
 
 
-@router.put("/{user_id}/profile", response_model=UserProfileResponse)
+@router.put("/me/profile", response_model=UserProfileResponse)
 async def submit_onboarding(
-    user_id: str,
     body: OnboardingRequest,
+    current_user_id: CurrentUserIdDep,
     use_case: SubmitOnboardingUseCaseDep,
 ) -> UserProfileResponse:
     try:
         output = await use_case.execute(
             SubmitOnboardingInput(
-                user_id=user_id,
+                user_id=current_user_id,
                 allergies=tuple(body.allergies),
                 diet_type=body.diet_type,
                 disliked_ingredients=tuple(body.disliked_ingredients),
