@@ -4,7 +4,15 @@
  */
 
 import React, {useState} from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {AddItemScreen} from './src/ui/add-item/AddItemScreen';
 import {CookNowScreen} from './src/ui/cook-now/CookNowScreen';
 import {DiscoverScreen} from './src/ui/discover/DiscoverScreen';
@@ -13,17 +21,27 @@ import {LoginScreen} from './src/ui/login/LoginScreen';
 import {SignUpScreen} from './src/ui/sign-up/SignUpScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
-import type {AuthUser} from './src/domain/Auth';
+import {useAppSession} from './src/ui/useAppSession';
 
 type Tab = 'kitchen' | 'cookNow' | 'discover' | 'add' | 'profile';
 type AuthMode = 'login' | 'signUp';
 
 function App(): React.JSX.Element {
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const {checkingSession, authUser, onboarded, setOnboarded, signIn} = useAppSession();
   const [authMode, setAuthMode] = useState<AuthMode>('login');
-  const [onboarded, setOnboarded] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('kitchen');
   const [cookNowIngredient, setCookNowIngredient] = useState<string | null>(null);
+
+  if (checkingSession) {
+    return (
+      <SafeAreaView style={styles.root}>
+        <StatusBar barStyle="dark-content" />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!authUser) {
     return (
@@ -31,12 +49,12 @@ function App(): React.JSX.Element {
         <StatusBar barStyle="dark-content" />
         {authMode === 'login' ? (
           <LoginScreen
-            onLoggedIn={setAuthUser}
+            onLoggedIn={signIn}
             onSwitchToSignUp={() => setAuthMode('signUp')}
           />
         ) : (
           <SignUpScreen
-            onSignedUp={setAuthUser}
+            onSignedUp={signIn}
             onSwitchToLogin={() => setAuthMode('login')}
           />
         )}
@@ -132,6 +150,7 @@ function App(): React.JSX.Element {
 
 const styles = StyleSheet.create({
   root: {flex: 1, backgroundColor: '#fff'},
+  centered: {flex: 1, alignItems: 'center', justifyContent: 'center'},
   tabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
