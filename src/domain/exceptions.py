@@ -104,3 +104,20 @@ class InvalidPipelineTransitionError(DomainError):
         self.raw_recipe_id = raw_recipe_id
         self.current_stage = current_stage
         self.attempted_stage = attempted_stage
+
+
+class UnstorableLicenseError(DomainError):
+    """Raised when publishing is blocked because a recipe's — or its
+    image's — reported license isn't in the storable set (see License).
+    Not legal advice; enforces the documented "free to store" policy."""
+
+    def __init__(
+        self, raw_recipe_id: str, reported_license: str, asset: str = "recipe"
+    ) -> None:
+        super().__init__(
+            f"Raw recipe '{raw_recipe_id}' cannot be published: its {asset} "
+            f"license '{reported_license}' is not in the storable set."
+        )
+        self.raw_recipe_id = raw_recipe_id
+        self.reported_license = reported_license
+        self.asset = asset

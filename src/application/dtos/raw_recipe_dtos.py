@@ -97,6 +97,13 @@ class TagStagedRecipesWithLlmOutput:
 
 
 @dataclass(frozen=True)
+class PublishRecipeImageInput:
+    url: str
+    license: str
+    attribution: str | None = None
+
+
+@dataclass(frozen=True)
 class PublishRawRecipeInput:
     raw_recipe_id: str
     recipe_id: str
@@ -109,3 +116,4 @@ class PublishRawRecipeInput:
     flavor_tags: list[str] = field(default_factory=list)
     technique_tags: list[str] = field(default_factory=list)
     equipment_needed: list[str] = field(default_factory=list)
+    image: PublishRecipeImageInput | None = None

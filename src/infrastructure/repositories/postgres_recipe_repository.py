@@ -15,6 +15,8 @@ from src.domain.entities.recipe import Recipe
 from src.domain.repositories.recipe_repository import RecipeRepository
 from src.domain.value_objects.flavor_profile import FlavorProfile
 from src.domain.value_objects.ingredient_role import IngredientRole
+from src.domain.value_objects.license import License
+from src.domain.value_objects.recipe_image import RecipeImage
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
 from src.infrastructure.database.models import RecipeIngredientModel, RecipeModel
@@ -92,6 +94,12 @@ class PostgresRecipeRepository(RecipeRepository):
         model.steps = list(recipe.steps)
         model.time_minutes = recipe.time_minutes
         model.difficulty = recipe.difficulty.value
+        model.license = recipe.license.value
+        model.source_attribution = recipe.source_attribution
+        image = recipe.image
+        model.image_url = image.url if image else None
+        model.image_license = image.license.value if image else None
+        model.image_attribution = image.attribution if image else None
         model.popularity_score = recipe.popularity_score
         model.flavor_profile_sweetness = flavor_profile.sweetness
         model.flavor_profile_saltiness = flavor_profile.saltiness
@@ -123,6 +131,15 @@ class PostgresRecipeRepository(RecipeRepository):
             )
             for row in result.scalars().all()
         ]
+        image = (
+            RecipeImage(
+                url=model.image_url,
+                license=License(model.image_license),
+                attribution=model.image_attribution,
+            )
+            if model.image_url
+            else None
+        )
         return Recipe(
             id=model.id,
             name=model.name,
@@ -130,6 +147,8 @@ class PostgresRecipeRepository(RecipeRepository):
             steps=list(model.steps),
             time_minutes=model.time_minutes,
             difficulty=SkillLevel(model.difficulty),
+            license=License(model.license),
+            source_attribution=model.source_attribution,
             cuisine_tags=list(model.cuisine_tags),
             flavor_tags=list(model.flavor_tags),
             technique_tags=list(model.technique_tags),
@@ -143,4 +162,5 @@ class PostgresRecipeRepository(RecipeRepository):
                 spiciness=model.flavor_profile_spiciness,
                 umami=model.flavor_profile_umami,
             ),
+            image=image,
         )

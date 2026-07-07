@@ -82,6 +82,15 @@ _skill_level = Enum(
     name="skill_level",
 )
 
+_license = Enum(
+    "public-domain",
+    "cc0",
+    "cc-by",
+    "cc-by-sa",
+    "self-authored",
+    name="recipe_license",
+)
+
 _budget_sensitivity = Enum(
     "low",
     "medium",
@@ -431,6 +440,17 @@ class RecipeModel(Base):
     popularity_score: Mapped[float] = mapped_column(
         Float, nullable=False, server_default="0"
     )
+
+    # --- Licensing & attribution guardrails — every published recipe must
+    # carry proof of where it came from and under what terms (§ Licensing &
+    # attribution guardrails AC1). image_* is nullable: most recipes have no
+    # image yet, but one is only ever storable under its own valid license
+    # (AC3) — see RecipeImage.
+    license: Mapped[str] = mapped_column(_license, nullable=False)
+    source_attribution: Mapped[str] = mapped_column(Text, nullable=False)
+    image_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    image_license: Mapped[str | None] = mapped_column(_license, nullable=True)
+    image_attribution: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # flavor_profile_* — flattened FlavorProfile dimensions, same convention
     # as UserModel's, so a recipe's taste match can be scored by similarity

@@ -32,7 +32,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from src.domain.exceptions import InvalidPipelineTransitionError, ValidationError
+from src.domain.exceptions import (
+    InvalidPipelineTransitionError,
+    UnstorableLicenseError,
+    ValidationError,
+)
+from src.domain.value_objects.license import License
 from src.domain.value_objects.pipeline_stage import PipelineStage
 from src.domain.value_objects.skill_level import SkillLevel
 from src.domain.value_objects.tagged_ingredient import TaggedIngredient
@@ -252,14 +257,44 @@ class RawRecipe:
         self._rejected_reason = reason.strip()
         self._stage = PipelineStage.REJECTED
 
+    def resolve_license(self) -> License:
+        """This raw recipe's reported license, normalized to a storable
+        License — the domain-level enforcement point for the "free to
+        store" policy. Raises UnstorableLicenseError if the reported
+        license isn't one we're allowed to publish under.
+
+        Callable independently of publish() so PublishRawRecipeUseCase can
+        obtain the resolved License to stamp onto the production Recipe
+        before actually advancing this raw recipe's stage.
+        """
+        license = License.from_raw(self._license)
+        if license is None:
+            raise UnstorableLicenseError(self._id, self._license)
+        return license
+
     def publish(self, recipe_id: str) -> None:
         """Advance approved -> published, recording the id of the production
-        Recipe this raw recipe was transformed into."""
+        Recipe this raw recipe was transformed into.
+
+        Calls resolve_license() as a domain-level backstop before mutating
+        state, so no publish path — present or future — can move a raw
+        recipe with a non-storable license into the published stage, even
+        if a caller forgets to check first.
+        """
         self._require_stage(PipelineStage.APPROVED, PipelineStage.PUBLISHED)
         if not recipe_id:
             raise ValidationError("recipe_id is required to publish a raw recipe.")
+        self.resolve_license()
         self._published_recipe_id = recipe_id
         self._stage = PipelineStage.PUBLISHED
+
+    def attribution_text(self) -> str:
+        """Canonical source-attribution string carried onto the published
+        Recipe (see Recipe.source_attribution) — the source, this
+        recipe's id within it, and any additional credit line the source
+        supplied."""
+        base = f"{self._source} (source id: {self._source_recipe_id})"
+        return f"{base} — {self._raw_attribution}" if self._raw_attribution else base
 
     def _require_stage(
         self, expected: PipelineStage, attempted: PipelineStage

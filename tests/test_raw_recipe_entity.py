@@ -6,8 +6,13 @@ from datetime import UTC, datetime
 import pytest
 
 from src.domain.entities.raw_recipe import RawRecipe
-from src.domain.exceptions import InvalidPipelineTransitionError, ValidationError
+from src.domain.exceptions import (
+    InvalidPipelineTransitionError,
+    UnstorableLicenseError,
+    ValidationError,
+)
 from src.domain.value_objects.ingredient_role import IngredientRole
+from src.domain.value_objects.license import License
 from src.domain.value_objects.pipeline_stage import PipelineStage
 from src.domain.value_objects.skill_level import SkillLevel
 from src.domain.value_objects.tagged_ingredient import TaggedIngredient
@@ -178,6 +183,48 @@ def test_publish_before_approval_raises() -> None:
 
     with pytest.raises(InvalidPipelineTransitionError):
         raw_recipe.publish("recipe-1")
+
+
+def test_resolve_license_normalizes_a_storable_reported_license() -> None:
+    raw_recipe = _raw_recipe(license="CC-BY-4.0")
+    assert raw_recipe.resolve_license() is License.CC_BY
+
+
+def test_resolve_license_raises_for_a_non_storable_reported_license() -> None:
+    raw_recipe = _raw_recipe(license="All Rights Reserved")
+    with pytest.raises(UnstorableLicenseError):
+        raw_recipe.resolve_license()
+
+
+def test_publish_blocks_a_raw_recipe_with_a_non_storable_license() -> None:
+    raw_recipe = _raw_recipe(license="CC-BY-NC-4.0")
+    _tag(raw_recipe)
+    raw_recipe.approve()
+
+    with pytest.raises(UnstorableLicenseError):
+        raw_recipe.publish("recipe-1")
+
+    # Blocked, not silently demoted — stage and published_recipe_id are
+    # untouched so the raw recipe stays visible for a reviewer to see why.
+    assert raw_recipe.stage == PipelineStage.APPROVED
+    assert raw_recipe.published_recipe_id is None
+
+
+def test_attribution_text_combines_source_and_source_recipe_id() -> None:
+    raw_recipe = _raw_recipe(source="spoonacular", source_recipe_id="12345")
+    assert raw_recipe.attribution_text() == "spoonacular (source id: 12345)"
+
+
+def test_attribution_text_appends_raw_attribution_when_present() -> None:
+    raw_recipe = _raw_recipe(
+        source="spoonacular",
+        source_recipe_id="12345",
+        raw_attribution="Recipe by Jane Doe",
+    )
+    assert (
+        raw_recipe.attribution_text()
+        == "spoonacular (source id: 12345) — Recipe by Jane Doe"
+    )
 
 
 def test_equality_is_by_id() -> None:

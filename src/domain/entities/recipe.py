@@ -24,6 +24,15 @@ flavor_profile is the numeric counterpart to flavor_tags: the same six
 FlavorProfile dimensions used for a user's declared preferences and derived
 TasteVector (§4.6), so a recipe's taste match can be scored by similarity
 rather than tag overlap (§10 Step 3). Defaults to neutral when unset.
+
+license and source_attribution are required, not optional metadata: the
+"free to store" policy (see License, RawRecipe.resolve_license) requires
+every published recipe to carry proof of where it came from and under what
+terms — PublishRawRecipeUseCase is the only place that constructs a Recipe,
+and it always derives these from the source RawRecipe, never accepts them
+as free-form publisher input. image is optional (many recipes have none
+yet) but, when present, is itself gated to a storable license via
+RecipeImage's own constructor — see that value object's docstring.
 """
 
 from __future__ import annotations
@@ -31,6 +40,8 @@ from __future__ import annotations
 from src.domain.entities.ingredient import Ingredient
 from src.domain.exceptions import IngredientNotFoundError, ValidationError
 from src.domain.value_objects.flavor_profile import FlavorProfile
+from src.domain.value_objects.license import License
+from src.domain.value_objects.recipe_image import RecipeImage
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
 
@@ -54,12 +65,15 @@ class Recipe:
         steps: list[str],
         time_minutes: int,
         difficulty: SkillLevel,
+        license: License,
+        source_attribution: str,
         cuisine_tags: list[str] | None = None,
         flavor_tags: list[str] | None = None,
         technique_tags: list[str] | None = None,
         equipment_needed: list[str] | None = None,
         popularity_score: float = 0.0,
         flavor_profile: FlavorProfile | None = None,
+        image: RecipeImage | None = None,
     ) -> None:
         if not id:
             raise ValidationError("Recipe id is required.")
@@ -79,10 +93,16 @@ class Recipe:
             )
         if not isinstance(difficulty, SkillLevel):
             raise ValidationError("Recipe difficulty must be a valid SkillLevel.")
+        if not isinstance(license, License):
+            raise ValidationError("Recipe license must be a valid License.")
+        if not source_attribution or not source_attribution.strip():
+            raise ValidationError("Recipe source_attribution is required.")
         if popularity_score < 0.0:
             raise ValidationError(
                 f"Recipe popularity_score cannot be negative, got {popularity_score}."
             )
+        if image is not None and not isinstance(image, RecipeImage):
+            raise ValidationError("Recipe image must be a valid RecipeImage.")
 
         self._id = id
         self._name = name.strip()
@@ -90,12 +110,15 @@ class Recipe:
         self._steps = [s.strip() for s in steps if s and s.strip()]
         self._time_minutes = time_minutes
         self._difficulty = difficulty
+        self._license = license
+        self._source_attribution = source_attribution.strip()
         self._cuisine_tags = _normalize_tags(cuisine_tags or [])
         self._flavor_tags = _normalize_tags(flavor_tags or [])
         self._technique_tags = _normalize_tags(technique_tags or [])
         self._equipment_needed = _normalize_tags(equipment_needed or [])
         self._popularity_score = popularity_score
         self._flavor_profile = flavor_profile or FlavorProfile()
+        self._image = image
 
     # --- Identity & read-only accessors ----------------------------------------
 
@@ -122,6 +145,18 @@ class Recipe:
     @property
     def difficulty(self) -> SkillLevel:
         return self._difficulty
+
+    @property
+    def license(self) -> License:
+        return self._license
+
+    @property
+    def source_attribution(self) -> str:
+        return self._source_attribution
+
+    @property
+    def image(self) -> RecipeImage | None:
+        return self._image
 
     @property
     def cuisine_tags(self) -> list[str]:

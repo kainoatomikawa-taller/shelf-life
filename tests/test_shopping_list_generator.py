@@ -15,6 +15,7 @@ from src.domain.services.shopping_list_generator import ShoppingListGenerator
 from src.domain.value_objects.hard_constraints import HardConstraints
 from src.domain.value_objects.ingredient_category import IngredientCategory
 from src.domain.value_objects.ingredient_role import IngredientRole
+from src.domain.value_objects.license import License
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.shelf_life_by_storage import ShelfLifeByStorage
 from src.domain.value_objects.skill_level import SkillLevel
@@ -59,6 +60,8 @@ def _recipe(**overrides: object) -> Recipe:
         steps=["Mix.", "Cook."],
         time_minutes=20,
         difficulty=SkillLevel.BEGINNER,
+        license=License.SELF_AUTHORED,
+        source_attribution="Test fixture",
     )
     defaults.update(overrides)
     return Recipe(**defaults)  # type: ignore[arg-type]

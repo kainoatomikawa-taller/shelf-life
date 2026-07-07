@@ -63,6 +63,14 @@ def _build_recipe_row(item: dict) -> dict:  # type: ignore[type-arg]
         "time_minutes": item["time_minutes"],
         "difficulty": item["difficulty"],
         "popularity_score": item.get("popularity_score", 0.0),
+        # Seed recipes are written for this catalog, not imported from an
+        # external source — "self-authored" is literally true, satisfying
+        # the same "free to store" policy every published recipe must meet
+        # (see PublishRawRecipeUseCase / License).
+        "license": item.get("license", "self-authored"),
+        "source_attribution": item.get(
+            "source_attribution", "Shelf Life editorial team"
+        ),
     }
     for dimension in _FLAVOR_DIMENSIONS:
         row[f"flavor_profile_{dimension}"] = flavor_profile.get(dimension, 0.5)

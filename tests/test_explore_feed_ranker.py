@@ -20,6 +20,7 @@ from src.domain.services.explore_feed_ranker import (
 from src.domain.value_objects.flavor_profile import FlavorProfile
 from src.domain.value_objects.hard_constraints import HardConstraints
 from src.domain.value_objects.ingredient_role import IngredientRole
+from src.domain.value_objects.license import License
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
 from src.domain.value_objects.soft_preferences import SoftPreferences
@@ -59,6 +60,8 @@ def _recipe(**overrides: object) -> Recipe:
         steps=["Cook."],
         time_minutes=20,
         difficulty=SkillLevel.BEGINNER,
+        license=License.SELF_AUTHORED,
+        source_attribution="Test fixture",
         popularity_score=0.5,
         flavor_profile=FlavorProfile(),
     )

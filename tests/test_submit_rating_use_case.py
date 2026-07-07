@@ -15,6 +15,7 @@ from src.domain.value_objects.freshness_date_type import FreshnessDateType
 from src.domain.value_objects.freshness_display_status import FreshnessDisplayStatus
 from src.domain.value_objects.hard_constraints import HardConstraints
 from src.domain.value_objects.ingredient_role import IngredientRole
+from src.domain.value_objects.license import License
 from src.domain.value_objects.quantity_state import QuantityState
 from src.domain.value_objects.recipe_ingredient import RecipeIngredient
 from src.domain.value_objects.skill_level import SkillLevel
@@ -44,6 +45,8 @@ def _recipe() -> Recipe:
         steps=["Mix.", "Cook."],
         time_minutes=20,
         difficulty=SkillLevel.BEGINNER,
+        license=License.SELF_AUTHORED,
+        source_attribution="Test fixture",
         flavor_profile=FlavorProfile(spiciness=0.9),
     )
 
