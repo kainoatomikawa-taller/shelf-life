@@ -106,6 +106,31 @@ class InvalidPipelineTransitionError(DomainError):
         self.attempted_stage = attempted_stage
 
 
+class ProfileNotFoundError(DomainError):
+    """Raised when a profile cannot be located by the repository."""
+
+    def __init__(self, profile_id: str) -> None:
+        super().__init__(f"Profile with id '{profile_id}' was not found.")
+        self.profile_id = profile_id
+
+
+class ProfileAlreadyExistsError(DomainError):
+    """Raised when a profile is created for a user id that already has one."""
+
+    def __init__(self, profile_id: str) -> None:
+        super().__init__(f"Profile with id '{profile_id}' already exists.")
+        self.profile_id = profile_id
+
+
+class UsernameAlreadyTakenError(DomainError):
+    """Raised when a profile is created or updated with a username that is
+    already taken (case-insensitively)."""
+
+    def __init__(self, username: str) -> None:
+        super().__init__(f"Username '{username}' is already taken.")
+        self.username = username
+
+
 class UnstorableLicenseError(DomainError):
     """Raised when publishing is blocked because a recipe's — or its
     image's — reported license isn't in the storable set (see License).

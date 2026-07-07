@@ -14,9 +14,16 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends
+import httpx
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.cache_port import CachePort
+from src.application.ports.token_verifier_port import (
+    InvalidTokenError,
+    TokenVerifierPort,
+)
 from src.application.use_cases.add_inventory_item import AddInventoryItemUseCase
 from src.application.use_cases.add_pantry_item import AddPantryItemUseCase
 from src.application.use_cases.add_purchases_to_kitchen import (
@@ -31,6 +38,7 @@ from src.application.use_cases.check_shopping_list_item import (
 from src.application.use_cases.consume_pantry_item import (
     ConsumePantryItemUseCase,
 )
+from src.application.use_cases.create_profile import CreateProfileUseCase
 from src.application.use_cases.decrement_recipe_ingredients import (
     DecrementRecipeIngredientsUseCase,
 )
@@ -39,9 +47,11 @@ from src.application.use_cases.generate_shopping_list_for_recipe import (
 )
 from src.application.use_cases.get_cook_now_feed import GetCookNowFeedUseCase
 from src.application.use_cases.get_discover_feed import GetDiscoverFeedUseCase
+from src.application.use_cases.get_my_profile import GetMyProfileUseCase
 from src.application.use_cases.get_recipe_detail import GetRecipeDetailUseCase
 from src.application.use_cases.get_shopping_list import GetShoppingListUseCase
 from src.application.use_cases.get_user_profile import GetUserProfileUseCase
+from src.application.use_cases.get_user_ratings import GetUserRatingsUseCase
 from src.application.use_cases.list_inventory_items import ListInventoryItemsUseCase
 from src.application.use_cases.list_pantry_items import ListPantryItemsUseCase
 from src.application.use_cases.remove_inventory_item import RemoveInventoryItemUseCase
@@ -55,6 +65,9 @@ from src.application.use_cases.update_inventory_item_quantity_state import (
     UpdateInventoryItemQuantityStateUseCase,
 )
 from src.domain.services.expiration_service import ExpirationService
+from src.infrastructure.auth.supabase_jwt_verifier import SupabaseJwtVerifier
+from src.infrastructure.cache.redis_cache import RedisCache
+from src.infrastructure.config import settings
 from src.infrastructure.database.engine import get_session
 from src.infrastructure.repositories.postgres_ingredient_repository import (
     PostgresIngredientRepository,
@@ -64,6 +77,9 @@ from src.infrastructure.repositories.postgres_inventory_item_repository import (
 )
 from src.infrastructure.repositories.postgres_pantry_item_repository import (
     PostgresPantryItemRepository,
+)
+from src.infrastructure.repositories.postgres_profile_repository import (
+    PostgresProfileRepository,
 )
 from src.infrastructure.repositories.postgres_rating_repository import (
     PostgresRatingRepository,
@@ -454,6 +470,21 @@ SubmitRatingUseCaseDep = Annotated[
 ]
 
 
+def get_get_user_ratings_use_case(
+    rating_repository: RatingRepositoryDep,
+    user_repository: UserRepositoryDep,
+) -> GetUserRatingsUseCase:
+    return GetUserRatingsUseCase(
+        rating_repository=rating_repository,
+        user_repository=user_repository,
+    )
+
+
+GetUserRatingsUseCaseDep = Annotated[
+    GetUserRatingsUseCase, Depends(get_get_user_ratings_use_case)
+]
+
+
 def get_decrement_recipe_ingredients_use_case(
     recipe_repository: RecipeRepositoryDep,
     inventory_item_repository: InventoryItemRepositoryDep,
@@ -471,4 +502,81 @@ def get_decrement_recipe_ingredients_use_case(
 DecrementRecipeIngredientsUseCaseDep = Annotated[
     DecrementRecipeIngredientsUseCase,
     Depends(get_decrement_recipe_ingredients_use_case),
+]
+
+
+# --- Auth: Supabase JWT verification ------------------------------------
+
+_cache = RedisCache()
+_jwks_http_client = httpx.AsyncClient()
+_bearer_scheme = HTTPBearer()
+
+
+def get_cache() -> CachePort:
+    return _cache
+
+
+CacheDep = Annotated[CachePort, Depends(get_cache)]
+
+
+def get_token_verifier(cache: CacheDep) -> TokenVerifierPort:
+    return SupabaseJwtVerifier(
+        supabase_url=settings.supabase_url,
+        audience=settings.supabase_jwt_audience,
+        cache=cache,
+        http_client=_jwks_http_client,
+        cache_ttl_seconds=settings.supabase_jwks_cache_ttl_seconds,
+    )
+
+
+TokenVerifierDep = Annotated[TokenVerifierPort, Depends(get_token_verifier)]
+
+BearerCredentialsDep = Annotated[HTTPAuthorizationCredentials, Depends(_bearer_scheme)]
+
+
+async def get_current_user_id(
+    credentials: BearerCredentialsDep, verifier: TokenVerifierDep
+) -> str:
+    try:
+        return await verifier.verify(credentials.credentials)
+    except InvalidTokenError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+        ) from exc
+
+
+CurrentUserIdDep = Annotated[str, Depends(get_current_user_id)]
+
+
+# --- Profiles -------------------------------------------------------------
+
+
+def get_profile_repository(session: SessionDep) -> PostgresProfileRepository:
+    return PostgresProfileRepository(session)
+
+
+ProfileRepositoryDep = Annotated[
+    PostgresProfileRepository, Depends(get_profile_repository)
+]
+
+
+def get_create_profile_use_case(
+    repository: ProfileRepositoryDep,
+) -> CreateProfileUseCase:
+    return CreateProfileUseCase(repository)
+
+
+CreateProfileUseCaseDep = Annotated[
+    CreateProfileUseCase, Depends(get_create_profile_use_case)
+]
+
+
+def get_my_profile_use_case(
+    repository: ProfileRepositoryDep,
+) -> GetMyProfileUseCase:
+    return GetMyProfileUseCase(repository)
+
+
+GetMyProfileUseCaseDep = Annotated[
+    GetMyProfileUseCase, Depends(get_my_profile_use_case)
 ]

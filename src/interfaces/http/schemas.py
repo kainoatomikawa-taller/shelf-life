@@ -234,6 +234,15 @@ class RatingResponse(BaseModel):
     decrementable_ingredient_ids: list[str]
 
 
+class UserRatingResponse(BaseModel):
+    id: str
+    user_id: str
+    recipe_id: str
+    stars: int
+    quick_tags: list[str]
+    made_it_at: datetime
+
+
 class DecrementRecipeIngredientsRequest(BaseModel):
     """Body for opting in to the pantry stock decrement the rating prompt
     offered (§5.6 AC2/AC3) — never triggered automatically."""
@@ -255,3 +264,18 @@ class UserProfileResponse(BaseModel):
     budget_sensitivity: str
     adventurousness: float
     taste_vector: dict[str, float]
+
+
+class CreateProfileRequest(BaseModel):
+    """Body for creating the caller's own profile. There is no `user_id`
+    field — the id comes from the verified bearer token, never the client."""
+
+    username: str = Field(..., min_length=1)
+    display_name: str = Field(..., min_length=1)
+
+
+class ProfileResponse(BaseModel):
+    id: str
+    username: str
+    display_name: str
+    created_at: datetime

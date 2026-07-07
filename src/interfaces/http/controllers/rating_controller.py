@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 
 from src.application.dtos.rating_dtos import (
     DecrementRecipeIngredientsInput,
+    GetUserRatingsInput,
     SubmitRatingInput,
 )
 from src.domain.exceptions import (
@@ -21,6 +22,7 @@ from src.domain.exceptions import (
 )
 from src.interfaces.http.dependencies import (
     DecrementRecipeIngredientsUseCaseDep,
+    GetUserRatingsUseCaseDep,
     SubmitRatingUseCaseDep,
 )
 from src.interfaces.http.schemas import (
@@ -28,9 +30,26 @@ from src.interfaces.http.schemas import (
     InventoryItemResponse,
     RatingResponse,
     SubmitRatingRequest,
+    UserRatingResponse,
 )
 
 router = APIRouter(prefix="/ratings", tags=["ratings"])
+
+
+@router.get("", response_model=list[UserRatingResponse])
+async def get_user_ratings(
+    use_case: GetUserRatingsUseCaseDep,
+    user_id: str = Query(..., min_length=1),
+) -> list[UserRatingResponse]:
+    """Every rating the user has recorded, most recent first — backs the
+    session-launch auto-load."""
+    try:
+        outputs = await use_case.execute(GetUserRatingsInput(user_id=user_id))
+    except UserNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    return [UserRatingResponse(**asdict(o)) for o in outputs]
 
 
 @router.post("", response_model=RatingResponse, status_code=status.HTTP_201_CREATED)

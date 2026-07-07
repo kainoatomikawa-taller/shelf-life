@@ -16,6 +16,9 @@ class Settings:
     app_env: str
     recipe_tagging_model: str
     recipe_tagging_batch_poll_seconds: float
+    supabase_url: str
+    supabase_jwt_audience: str
+    supabase_jwks_cache_ttl_seconds: float
 
     @staticmethod
     def from_env() -> "Settings":
@@ -33,6 +36,14 @@ class Settings:
             recipe_tagging_model=os.getenv("RECIPE_TAGGING_MODEL", "claude-opus-4-8"),
             recipe_tagging_batch_poll_seconds=float(
                 os.getenv("RECIPE_TAGGING_BATCH_POLL_SECONDS", "30")
+            ),
+            # SUPABASE_URL is the project's base URL (e.g.
+            # https://xyzcompany.supabase.co) — the JWKS endpoint used to
+            # verify Auth JWTs is derived from it, not configured separately.
+            supabase_url=os.getenv("SUPABASE_URL", ""),
+            supabase_jwt_audience=os.getenv("SUPABASE_JWT_AUDIENCE", "authenticated"),
+            supabase_jwks_cache_ttl_seconds=float(
+                os.getenv("SUPABASE_JWKS_CACHE_TTL_SECONDS", "3600")
             ),
         )
 

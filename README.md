@@ -33,6 +33,32 @@ what's *expiring soon* or already *expired* so nothing goes to waste.
 └── Dockerfile               # Backend image
 ```
 
+## Database Conventions
+
+Identity is provided by Supabase Auth: every authenticated user has a row in
+the Supabase-managed `auth.users` table (not part of our migrations). The
+app's own schema builds on top of that id:
+
+- **`public.profiles`** — the public identity for an authenticated user
+  (`username`, `display_name`). Its `id` column *is* `auth.users.id` (a
+  1:1 FK, `ON DELETE CASCADE`) — a profile has no identity of its own.
+  `username` is stored pre-normalized (stripped + lowercased), so a plain
+  unique constraint gives case-insensitive uniqueness without a separate
+  expression index; a check constraint (`username = lower(username)`)
+  defends that invariant against writes that bypass the application layer.
+- **Every user-owned table** (e.g. `inventory_items`, `ratings`,
+  `shopping_list_items`, and any future one) carries a
+  `user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE`
+  column. New tables should follow this convention rather than inventing a
+  separate identity concept.
+- **`public.users`** predates this convention: despite the name, it's a
+  taste/dietary-preferences table (allergies, flavor profile, taste vector),
+  keyed by an opaque `String(36)` id that its own dependents
+  (`inventory_items`, `ratings`, `shopping_list_items`) currently FK into
+  instead of `auth.users.id`. Repointing those FKs — and likely renaming the
+  table to something like `taste_profiles` — is a deliberate follow-up, not
+  part of adopting this convention.
+
 ---
 
 ## Clean Architecture

@@ -35,3 +35,18 @@ class SubmitRatingOutput:
 class DecrementRecipeIngredientsInput:
     user_id: str
     recipe_id: str
+
+
+@dataclass(frozen=True)
+class GetUserRatingsInput:
+    user_id: str
+
+
+@dataclass(frozen=True)
+class RatingOutput:
+    id: str
+    user_id: str
+    recipe_id: str
+    stars: int
+    quick_tags: list[str]
+    made_it_at: datetime

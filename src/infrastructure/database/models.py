@@ -17,6 +17,7 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     Numeric,
@@ -25,7 +26,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from src.infrastructure.database.engine import Base
@@ -344,6 +345,38 @@ class UserModel(Base):
         CheckConstraint(
             "typical_time_available_minutes > 0",
             name="ck_users_typical_time_available_positive",
+        ),
+    )
+
+
+class ProfileModel(Base):
+    """Persistence representation of a user's public profile.
+
+    `id` is the same id as `auth.users.id` — a profile extends the Supabase
+    Auth identity rather than having one of its own — hence the FK/PK
+    doubling as this table's only identity column. `auth.users` is managed
+    by Supabase and isn't part of our ORM metadata, so it's referenced by
+    schema-qualified name rather than a mapped model.
+
+    `username` is stored pre-normalized (stripped + lowercased, enforced by
+    the Profile entity's constructor) so a plain unique constraint gives
+    case-insensitive uniqueness; the check constraint below defends that
+    invariant against writes that bypass the application layer.
+    """
+
+    __tablename__ = "profiles"
+
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
+    username: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    display_name: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+
+    __table_args__ = (
+        ForeignKeyConstraint(["id"], ["auth.users.id"], ondelete="CASCADE"),
+        CheckConstraint(
+            "username = lower(username)", name="ck_profiles_username_lowercase"
         ),
     )
 
