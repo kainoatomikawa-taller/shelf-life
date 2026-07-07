@@ -117,6 +117,15 @@ _ingredient_role = Enum(
     name="ingredient_role",
 )
 
+_pipeline_stage = Enum(
+    "imported",
+    "tagged",
+    "approved",
+    "rejected",
+    "published",
+    name="pipeline_stage",
+)
+
 
 class PantryItemModel(Base):
     """Persistence representation of a pantry item."""
@@ -556,4 +565,64 @@ class RatingModel(Base):
 
     __table_args__ = (
         CheckConstraint("stars >= 1 AND stars <= 5", name="ck_ratings_stars_range"),
+    )
+
+
+class RawRecipeModel(Base):
+    """Persistence representation of a staged raw recipe (recipe ingestion
+    pipeline).
+
+    Lives in its own table, entirely separate from RecipeModel — the whole
+    point of staging is that untrusted, freeform source data never shares a
+    table (or a schema) with the reviewed production catalog. published_recipe_id
+    is a nullable FK set only once the pipeline reaches the published stage;
+    ON DELETE SET NULL so deleting the published Recipe doesn't cascade into
+    losing the staging/provenance record.
+    """
+
+    __tablename__ = "raw_recipes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+
+    source: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    source_recipe_id: Mapped[str] = mapped_column(String(255), nullable=False)
+    license: Mapped[str] = mapped_column(String(128), nullable=False)
+
+    raw_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    raw_ingredients: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    raw_method: Mapped[list[str]] = mapped_column(
+        ARRAY(Text),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    raw_attribution: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    imported_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+
+    stage: Mapped[str] = mapped_column(
+        _pipeline_stage, nullable=False, server_default="imported", index=True
+    )
+    tags: Mapped[list[str]] = mapped_column(
+        ARRAY(String),
+        nullable=False,
+        server_default=text("ARRAY[]::text[]"),
+    )
+    review_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    rejected_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    published_recipe_id: Mapped[str | None] = mapped_column(
+        String(36),
+        ForeignKey("recipes.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    __table_args__ = (
+        UniqueConstraint(
+            "source", "source_recipe_id", name="uq_raw_recipes_source_pair"
+        ),
     )

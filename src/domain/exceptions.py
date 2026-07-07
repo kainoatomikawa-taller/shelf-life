@@ -68,3 +68,39 @@ class ShoppingListItemNotFoundError(DomainError):
     def __init__(self, item_id: str) -> None:
         super().__init__(f"Shopping list item with id '{item_id}' was not found.")
         self.item_id = item_id
+
+
+class RawRecipeNotFoundError(DomainError):
+    """Raised when a staged raw recipe cannot be located by the repository."""
+
+    def __init__(self, raw_recipe_id: str) -> None:
+        super().__init__(f"Raw recipe with id '{raw_recipe_id}' was not found.")
+        self.raw_recipe_id = raw_recipe_id
+
+
+class DuplicateRawRecipeError(DomainError):
+    """Raised when a raw recipe is imported twice from the same source."""
+
+    def __init__(self, source: str, source_recipe_id: str) -> None:
+        super().__init__(
+            f"A raw recipe from source '{source}' with source_recipe_id "
+            f"'{source_recipe_id}' has already been imported."
+        )
+        self.source = source
+        self.source_recipe_id = source_recipe_id
+
+
+class InvalidPipelineTransitionError(DomainError):
+    """Raised when a raw recipe is moved to a pipeline stage it cannot reach
+    from its current stage (see RawRecipe.tag/approve/reject/publish)."""
+
+    def __init__(
+        self, raw_recipe_id: str, current_stage: str, attempted_stage: str
+    ) -> None:
+        super().__init__(
+            f"Raw recipe '{raw_recipe_id}' cannot move to '{attempted_stage}' "
+            f"from its current stage '{current_stage}'."
+        )
+        self.raw_recipe_id = raw_recipe_id
+        self.current_stage = current_stage
+        self.attempted_stage = attempted_stage
