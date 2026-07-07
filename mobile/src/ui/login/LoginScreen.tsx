@@ -19,9 +19,10 @@ import {useLogin} from './useLogin';
 
 interface Props {
   onLoggedIn: (user: AuthUser) => void;
+  onSwitchToSignUp: () => void;
 }
 
-export function LoginScreen({onLoggedIn}: Props): React.JSX.Element {
+export function LoginScreen({onLoggedIn, onSwitchToSignUp}: Props): React.JSX.Element {
   const {
     username,
     setUsername,
@@ -74,6 +75,13 @@ export function LoginScreen({onLoggedIn}: Props): React.JSX.Element {
             <Text style={styles.buttonText}>Log in</Text>
           )}
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.switchLink}
+          onPress={onSwitchToSignUp}
+          disabled={submitting}>
+          <Text style={styles.switchLinkText}>Don't have an account? Sign up</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -109,4 +117,6 @@ const styles = StyleSheet.create({
   },
   buttonDisabled: {backgroundColor: '#a5c9a8'},
   buttonText: {color: '#fff', fontWeight: '700', fontSize: 16},
+  switchLink: {marginTop: 20, alignItems: 'center'},
+  switchLinkText: {color: '#2e7d32', fontSize: 14, fontWeight: '600'},
 });

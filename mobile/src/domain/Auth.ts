@@ -7,3 +7,11 @@ export interface AuthUser {
   id: string;
   username: string;
 }
+
+/** Fields submitted to the sign-up-with-username edge function. */
+export interface SignUpRequest {
+  name: string;
+  username: string;
+  email: string;
+  password: string;
+}

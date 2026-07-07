@@ -10,14 +10,17 @@ import {CookNowScreen} from './src/ui/cook-now/CookNowScreen';
 import {DiscoverScreen} from './src/ui/discover/DiscoverScreen';
 import {KitchenScreen} from './src/ui/kitchen/KitchenScreen';
 import {LoginScreen} from './src/ui/login/LoginScreen';
+import {SignUpScreen} from './src/ui/sign-up/SignUpScreen';
 import {OnboardingScreen} from './src/ui/onboarding/OnboardingScreen';
 import {ProfileScreen} from './src/ui/profile/ProfileScreen';
 import type {AuthUser} from './src/domain/Auth';
 
 type Tab = 'kitchen' | 'cookNow' | 'discover' | 'add' | 'profile';
+type AuthMode = 'login' | 'signUp';
 
 function App(): React.JSX.Element {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [onboarded, setOnboarded] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>('kitchen');
   const [cookNowIngredient, setCookNowIngredient] = useState<string | null>(null);
@@ -26,7 +29,17 @@ function App(): React.JSX.Element {
     return (
       <SafeAreaView style={styles.root}>
         <StatusBar barStyle="dark-content" />
-        <LoginScreen onLoggedIn={setAuthUser} />
+        {authMode === 'login' ? (
+          <LoginScreen
+            onLoggedIn={setAuthUser}
+            onSwitchToSignUp={() => setAuthMode('signUp')}
+          />
+        ) : (
+          <SignUpScreen
+            onSignedUp={setAuthUser}
+            onSwitchToLogin={() => setAuthMode('login')}
+          />
+        )}
       </SafeAreaView>
     );
   }
