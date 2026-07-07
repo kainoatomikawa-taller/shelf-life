@@ -56,6 +56,20 @@ class Profile:
     def created_at(self) -> datetime:
         return self._created_at
 
+    def update_username(self, username: str) -> None:
+        """Replace the username. Unlimited changes, no cooldown — callers
+        are responsible for re-checking uniqueness before calling this."""
+        normalized_username = username.strip().lower()
+        if not normalized_username:
+            raise ValidationError("Username is required.")
+        self._username = normalized_username
+
+    def update_display_name(self, display_name: str) -> None:
+        """Replace the display name shown in greetings."""
+        if not display_name.strip():
+            raise ValidationError("Display name is required.")
+        self._display_name = display_name
+
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Profile):
             return NotImplemented

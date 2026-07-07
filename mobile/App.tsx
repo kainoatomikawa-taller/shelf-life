@@ -27,7 +27,14 @@ type Tab = 'kitchen' | 'cookNow' | 'discover' | 'add' | 'profile';
 type AuthMode = 'login' | 'signUp';
 
 function App(): React.JSX.Element {
-  const {checkingSession, authUser, onboarded, setOnboarded, signIn} = useAppSession();
+  const {
+    checkingSession,
+    authUser,
+    onboarded,
+    setOnboarded,
+    signIn,
+    updateIdentity,
+  } = useAppSession();
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [activeTab, setActiveTab] = useState<Tab>('kitchen');
   const [cookNowIngredient, setCookNowIngredient] = useState<string | null>(null);
@@ -85,6 +92,7 @@ function App(): React.JSX.Element {
           {activeTab === 'kitchen' && (
             <KitchenScreen
               userId={userId}
+              displayName={authUser.name}
               onCookNow={item => setCookNowIngredient(item.ingredientName)}
             />
           )}
@@ -96,7 +104,12 @@ function App(): React.JSX.Element {
           )}
           {activeTab === 'discover' && <DiscoverScreen userId={userId} />}
           {activeTab === 'add' && <AddItemScreen userId={userId} />}
-          {activeTab === 'profile' && <ProfileScreen userId={userId} />}
+          {activeTab === 'profile' && (
+            <ProfileScreen
+              authUser={authUser}
+              onIdentityUpdated={updateIdentity}
+            />
+          )}
           <View style={styles.tabBar}>
             <TouchableOpacity
               style={styles.tabButton}

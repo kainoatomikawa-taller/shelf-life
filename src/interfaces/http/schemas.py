@@ -274,6 +274,15 @@ class CreateProfileRequest(BaseModel):
     display_name: str = Field(..., min_length=1)
 
 
+class UpdateProfileRequest(BaseModel):
+    """Body for editing the caller's own profile (§6). Both fields are
+    optional so the client can save display_name and username
+    independently; omit a field to leave it unchanged."""
+
+    username: str | None = Field(None, min_length=1)
+    display_name: str | None = Field(None, min_length=1)
+
+
 class ProfileResponse(BaseModel):
     id: str
     username: str

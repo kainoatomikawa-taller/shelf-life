@@ -83,5 +83,14 @@ export function useAppSession() {
     [loadForUser],
   );
 
-  return {checkingSession, authUser, onboarded, setOnboarded, signIn};
+  /** Keeps the app-wide identity (e.g. greetings) in sync after the
+   * Profile screen edits display_name/username. */
+  const updateIdentity = useCallback(
+    (partial: Partial<Pick<AuthUser, 'username' | 'name'>>) => {
+      setAuthUser(prev => (prev ? {...prev, ...partial} : prev));
+    },
+    [],
+  );
+
+  return {checkingSession, authUser, onboarded, setOnboarded, signIn, updateIdentity};
 }

@@ -265,11 +265,14 @@ class UserModel(Base):
     and taste_vector_* flatten their respective value objects into scalar
     columns, one per FLAVOR_DIMENSIONS entry, following the same pattern used
     for typicalShelfLifeByStorage on ingredients.
+
+    `id` is `auth.users.id` — same convention as `ProfileModel` — so RLS
+    policies on this table can scope rows via `id = auth.uid()`.
     """
 
     __tablename__ = "users"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True)
 
     # --- Hard constraints (§4.6) — never relaxed for a recommendation. -----
     allergies: Mapped[list[str]] = mapped_column(
@@ -338,6 +341,7 @@ class UserModel(Base):
     )
 
     __table_args__ = (
+        ForeignKeyConstraint(["id"], ["auth.users.id"], ondelete="CASCADE"),
         CheckConstraint(
             "adventurousness >= 0 AND adventurousness <= 1",
             name="ck_users_adventurousness_range",
@@ -394,8 +398,8 @@ class InventoryItemModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        UUID(as_uuid=False),
+        ForeignKey("auth.users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -560,8 +564,8 @@ class ShoppingListItemModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        UUID(as_uuid=False),
+        ForeignKey("auth.users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
@@ -595,8 +599,8 @@ class RatingModel(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[str] = mapped_column(
-        String(36),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        UUID(as_uuid=False),
+        ForeignKey("auth.users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )

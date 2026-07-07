@@ -28,6 +28,7 @@ import {UseItUpSoonStrip} from './UseItUpSoonStrip';
 
 interface Props {
   userId: string;
+  displayName: string;
   onCookNow: (item: InventoryItem) => void;
 }
 
@@ -44,7 +45,11 @@ function groupByLabel(groupBy: GroupBy): string {
   return groupBy === 'location' ? 'By location' : 'By urgency';
 }
 
-export function KitchenScreen({userId, onCookNow}: Props): React.JSX.Element {
+export function KitchenScreen({
+  userId,
+  displayName,
+  onCookNow,
+}: Props): React.JSX.Element {
   const {items, loading, error, setQuantityState, editDates, remove} =
     useInventoryItems(userId);
   const [viewMode, setViewMode] = useState<ViewMode>('kitchen');
@@ -59,6 +64,7 @@ export function KitchenScreen({userId, onCookNow}: Props): React.JSX.Element {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.greeting}>Welcome back, {displayName}</Text>
       <Text style={styles.title}>Kitchen</Text>
 
       <UseItUpSoonStrip items={useItUpSoon} onCookNow={onCookNow} />
@@ -119,6 +125,7 @@ export function KitchenScreen({userId, onCookNow}: Props): React.JSX.Element {
 
 const styles = StyleSheet.create({
   container: {flex: 1, padding: 20, paddingBottom: 0},
+  greeting: {fontSize: 14, fontWeight: '600', color: '#666', marginBottom: 2},
   title: {fontSize: 28, fontWeight: '700', marginBottom: 16},
   groupByRow: {marginTop: 12},
   spinner: {marginTop: 24},

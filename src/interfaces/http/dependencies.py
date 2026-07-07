@@ -64,6 +64,7 @@ from src.application.use_cases.update_inventory_item_dates import (
 from src.application.use_cases.update_inventory_item_quantity_state import (
     UpdateInventoryItemQuantityStateUseCase,
 )
+from src.application.use_cases.update_profile import UpdateProfileUseCase
 from src.domain.services.expiration_service import ExpirationService
 from src.infrastructure.auth.supabase_jwt_verifier import SupabaseJwtVerifier
 from src.infrastructure.cache.redis_cache import RedisCache
@@ -579,4 +580,15 @@ def get_my_profile_use_case(
 
 GetMyProfileUseCaseDep = Annotated[
     GetMyProfileUseCase, Depends(get_my_profile_use_case)
+]
+
+
+def get_update_profile_use_case(
+    repository: ProfileRepositoryDep,
+) -> UpdateProfileUseCase:
+    return UpdateProfileUseCase(repository)
+
+
+UpdateProfileUseCaseDep = Annotated[
+    UpdateProfileUseCase, Depends(get_update_profile_use_case)
 ]

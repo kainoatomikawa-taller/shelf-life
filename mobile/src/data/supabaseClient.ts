@@ -15,3 +15,13 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: false,
   },
 });
+
+/**
+ * Reads the current (SDK-refreshed, if needed) access token for
+ * bearer-authenticated calls to our backend. Returns null if there's no
+ * signed-in session.
+ */
+export async function getAccessToken(): Promise<string | null> {
+  const {data} = await supabase.auth.getSession();
+  return data.session?.access_token ?? null;
+}

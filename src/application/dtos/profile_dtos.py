@@ -23,3 +23,10 @@ class ProfileOutput:
     username: str
     display_name: str
     created_at: datetime
+
+
+@dataclass(frozen=True)
+class UpdateProfileInput:
+    user_id: str
+    username: str | None = None
+    display_name: str | None = None

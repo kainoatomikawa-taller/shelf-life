@@ -26,3 +26,7 @@ class ProfileRepository(ABC):
     async def get_by_username(self, username: str) -> Profile | None:
         """Return the profile with the given (already-normalized) username,
         or None."""
+
+    @abstractmethod
+    async def update(self, profile: Profile) -> None:
+        """Persist changes to an existing profile."""

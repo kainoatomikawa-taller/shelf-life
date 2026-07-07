@@ -14,7 +14,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.application.dtos.profile_dtos import CreateProfileInput
+from src.application.dtos.profile_dtos import CreateProfileInput, UpdateProfileInput
 from src.domain.exceptions import (
     ProfileAlreadyExistsError,
     ProfileNotFoundError,
@@ -24,8 +24,13 @@ from src.interfaces.http.dependencies import (
     CreateProfileUseCaseDep,
     CurrentUserIdDep,
     GetMyProfileUseCaseDep,
+    UpdateProfileUseCaseDep,
 )
-from src.interfaces.http.schemas import CreateProfileRequest, ProfileResponse
+from src.interfaces.http.schemas import (
+    CreateProfileRequest,
+    ProfileResponse,
+    UpdateProfileRequest,
+)
 
 router = APIRouter(prefix="/profiles", tags=["profiles"])
 
@@ -61,5 +66,33 @@ async def get_my_profile(
     except ProfileNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    return ProfileResponse(**asdict(output))
+
+
+@router.patch("/me", response_model=ProfileResponse)
+async def update_my_profile(
+    body: UpdateProfileRequest,
+    current_user_id: CurrentUserIdDep,
+    use_case: UpdateProfileUseCaseDep,
+) -> ProfileResponse:
+    """Edits display_name and/or username (§6). Username changes are
+    unlimited with no cooldown, but each one re-runs the case-insensitive
+    uniqueness check (AC3/AC4) and is rejected on conflict (AC5)."""
+    try:
+        output = await use_case.execute(
+            UpdateProfileInput(
+                user_id=current_user_id,
+                username=body.username,
+                display_name=body.display_name,
+            )
+        )
+    except ProfileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(exc)
+        ) from exc
+    except UsernameAlreadyTakenError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
         ) from exc
     return ProfileResponse(**asdict(output))

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncGenerator
 
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
     async_sessionmaker,
@@ -28,8 +29,20 @@ SessionFactory = async_sessionmaker(
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """Yield a database session (used as a FastAPI dependency)."""
+    """Yield a database session (used as a FastAPI dependency).
+
+    Unconditionally clears the RLS identity claim before yielding. Pooled
+    connections are reused across requests, so a request that never sets its
+    own claim (unauthenticated, or authenticated but forgets to) must never
+    inherit a previous request's — that would leak one user's row-level
+    access into another request's session. `AuthenticatedSessionDep`
+    (`interfaces/http/dependencies.py`) then sets the real claim for
+    authenticated requests, on the same session.
+    """
     async with SessionFactory() as session:
+        await session.execute(
+            text("SELECT set_config('request.jwt.claim.sub', '', false)")
+        )
         yield session
 
 

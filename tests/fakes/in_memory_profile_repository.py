@@ -25,3 +25,6 @@ class InMemoryProfileRepository(ProfileRepository):
             if profile.username == username:
                 return profile
         return None
+
+    async def update(self, profile: Profile) -> None:
+        self._profiles[profile.id] = profile

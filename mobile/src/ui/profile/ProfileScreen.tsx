@@ -13,22 +13,43 @@ import {
   Text,
   View,
 } from 'react-native';
+import type {AuthUser} from '../../domain/Auth';
 import {AdventurousnessStep} from '../onboarding/steps/AdventurousnessStep';
 import {AllergiesDietStep} from '../onboarding/steps/AllergiesDietStep';
 import {CookingRealityStep} from '../onboarding/steps/CookingRealityStep';
 import {CuisinesStep} from '../onboarding/steps/CuisinesStep';
 import {FlavorSlidersStep} from '../onboarding/steps/FlavorSlidersStep';
+import {AccountSection} from './components/AccountSection';
 import {Section} from './components/Section';
 import {TasteVectorHistory} from './components/TasteVectorHistory';
+import {useAccountProfile} from './useAccountProfile';
 import {useProfile} from './useProfile';
 
 interface Props {
-  userId: string;
+  authUser: AuthUser;
+  onIdentityUpdated: (
+    partial: Partial<Pick<AuthUser, 'username' | 'name'>>,
+  ) => void;
 }
 
-export function ProfileScreen({userId}: Props): React.JSX.Element {
+export function ProfileScreen({
+  authUser,
+  onIdentityUpdated,
+}: Props): React.JSX.Element {
   const {answers, tasteVector, loading, saving, error, updateAnswers} =
-    useProfile(userId);
+    useProfile(authUser.id);
+  const {
+    username,
+    setUsername,
+    displayName,
+    setDisplayName,
+    savingUsername,
+    savingDisplayName,
+    usernameError,
+    displayNameError,
+    saveUsername,
+    saveDisplayName,
+  } = useAccountProfile(authUser, onIdentityUpdated);
 
   if (loading || !answers || !tasteVector) {
     return (
@@ -48,6 +69,21 @@ export function ProfileScreen({userId}: Props): React.JSX.Element {
         {saving && <Text style={styles.status}>Saving…</Text>}
       </View>
       {error && <Text style={styles.error}>{error}</Text>}
+
+      <Section title="Account" subtitle="Your display name and username.">
+        <AccountSection
+          displayName={displayName}
+          onChangeDisplayName={setDisplayName}
+          onSaveDisplayName={() => void saveDisplayName()}
+          savingDisplayName={savingDisplayName}
+          displayNameError={displayNameError}
+          username={username}
+          onChangeUsername={setUsername}
+          onSaveUsername={() => void saveUsername()}
+          savingUsername={savingUsername}
+          usernameError={usernameError}
+        />
+      </Section>
 
       <Section
         title="Allergies & diet"

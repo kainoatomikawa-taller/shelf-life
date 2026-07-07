@@ -50,6 +50,18 @@ class PostgresProfileRepository(ProfileRepository):
         model = result.scalar_one_or_none()
         return self._to_entity(model) if model else None
 
+    async def update(self, profile: Profile) -> None:
+        model = await self._session.get(ProfileModel, profile.id)
+        if model is None:
+            return
+        model.username = profile.username
+        model.display_name = profile.display_name
+        try:
+            await self._session.commit()
+        except IntegrityError as exc:
+            await self._session.rollback()
+            raise UsernameAlreadyTakenError(profile.username) from exc
+
     @staticmethod
     def _to_entity(model: ProfileModel) -> Profile:
         return Profile(

@@ -71,4 +71,33 @@ export class ProfileApi {
     }
     return toDomain((await res.json()) as ProfileResponse);
   }
+
+  /**
+   * Edits display_name and/or username on the Profile screen. Username
+   * changes are unlimited with no cooldown; a 409 means the requested
+   * username is already taken by someone else.
+   */
+  async update(
+    accessToken: string,
+    fields: {username?: string; displayName?: string},
+  ): Promise<Profile> {
+    const res = await fetch(`${this.baseUrl}/profiles/me`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        username: fields.username,
+        display_name: fields.displayName,
+      }),
+    });
+    if (res.status === 409) {
+      throw new Error('That username is already taken.');
+    }
+    if (!res.ok) {
+      throw new Error(`Failed to update profile: ${res.status}`);
+    }
+    return toDomain((await res.json()) as ProfileResponse);
+  }
 }
